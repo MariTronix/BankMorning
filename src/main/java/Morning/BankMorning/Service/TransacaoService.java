@@ -1,6 +1,7 @@
 package Morning.BankMorning.Service;
 
-import Morning.BankMorning.Dto.TransferenciaRequest;
+import Morning.BankMorning.Dto.TransacaoRequest;
+
 import Morning.BankMorning.Model.Conta;
 import Morning.BankMorning.Model.Transacao;
 import Morning.BankMorning.Repository.ContaRepository;
@@ -21,7 +22,7 @@ public class TransacaoService {
     private ContaRepository contaRepository;
 
     @Transactional
-    public Transacao realizarTransferencia(TransferenciaRequest request) {
+    public Transacao realizarTransferencia(TransacaoRequest request) {
 
         Conta origem = contaRepository.findById(request.getIdContaOrigem())
                 .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada"));

@@ -1,6 +1,6 @@
 package Morning.BankMorning.Controller;
 
-import Morning.BankMorning.Dto.TransferenciaRequest;
+import Morning.BankMorning.Dto.TransacaoRequest;
 import Morning.BankMorning.Model.Transacao;
 import Morning.BankMorning.Service.TransacaoService;
 import jakarta.validation.Valid;
@@ -19,7 +19,7 @@ public class TransacaoController {
     private TransacaoService service;
 
     @PostMapping
-    public ResponseEntity<Transacao> transferir(@RequestBody @Valid TransferenciaRequest request) {
+    public ResponseEntity<Transacao> transferir(@RequestBody @Valid TransacaoRequest request) {
         Transacao novaTransacao = service.realizarTransferencia(request);
         return ResponseEntity.ok(novaTransacao);
     }

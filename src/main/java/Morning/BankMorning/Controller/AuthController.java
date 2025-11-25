@@ -5,9 +5,7 @@ import Morning.BankMorning.Dto.LoginResponse;
 import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Repository.UsuarioRepository;
 import Morning.BankMorning.Service.TokenService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,19 +27,19 @@ public class AuthController {
     private TokenService tokenService;
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request) {
-        // 1. Buscar o usuário pelo login
-        Usuario usuario = repository.findByLogin(request.getLogin())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário ou senha inválidos")); // Mensagem genérica por segurança
+    public ResponseEntity login(@RequestBody LoginRequest body) {
+        // 1. Busca usuário pelo email
+        Usuario usuario = repository.findByLogin(body.login())
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // 2. Verificar se a senha bate (Senha pura vs Hash no banco)
-        if (!passwordEncoder.matches(request.getSenha(), usuario.getSenha())) {
-            throw new IllegalArgumentException("Usuário ou senha inválidos");
+        // 2. Compara a senha enviada com o hash do banco
+        if (passwordEncoder.matches(body.senha(), usuario.getSenha())) {
+            // 3. Gera e devolve o token
+            String token = tokenService.gerarToken(usuario);
+            return ResponseEntity.ok(new LoginResponse(token));
         }
 
-        // 3. Se passou, gera o token
-        String token = tokenService.gerarToken(usuario);
-
-        return ResponseEntity.ok(new LoginResponse(token));
+        // 4. Senha errada
+        return ResponseEntity.badRequest().build();
     }
 }

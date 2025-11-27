@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class BankMorningApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BankMorningApplication.class, args);
-	}
-//
+        SpringApplication.run(BankMorningApplication.class, args);
+    }
 }

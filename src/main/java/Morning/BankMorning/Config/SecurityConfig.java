@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/contas").permitAll()
                         .requestMatchers(HttpMethod.GET, "/contas/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/transacoes/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form.disable())

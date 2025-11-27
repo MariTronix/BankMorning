@@ -17,6 +17,9 @@ public class UsuarioService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private ContaService contaService;
+
 
     public UsuarioResponse criarUsuario(UsuarioRequest request) {
 
@@ -38,6 +41,8 @@ public class UsuarioService {
         usuario.setSenha(senhaCriptografada);
 
         Usuario salvo = usuarioRepository.save(usuario);
+
+        contaService.criarContaParaUsuario(salvo);
 
         UsuarioResponse response = new UsuarioResponse();
         response.setIdUsuario(salvo.getIdUsuario());

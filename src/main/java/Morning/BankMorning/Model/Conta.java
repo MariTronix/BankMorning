@@ -23,6 +23,6 @@ public class Conta {
     private BigDecimal saldo;
 
     @OneToOne
-    @JoinColumn(name = "id_usuatio", referencedColumnName = "idUsuario")
+    @JoinColumn(name = "id_usuario", referencedColumnName = "idUsuario")
     private Usuario usuario;
 }

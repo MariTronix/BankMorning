@@ -10,6 +10,7 @@ import java.util.Random;
 
 @Service
 public class ContaService {
+
     @Autowired
     private ContaRepository contaRepository;
 
@@ -23,7 +24,7 @@ public class ContaService {
         contaRepository.save(novaConta);
     }
 
-    private Integer gerarNumeroContaUnico(){
+    private Integer gerarNumeroContaUnico() {
         return 100000 + new Random().nextInt(900000);
     }
 }

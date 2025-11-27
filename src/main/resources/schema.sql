@@ -1,11 +1,13 @@
 
-CREATE TABLE Cliente(
-                         ID_Cliente SERIAL PRIMARY KEY,
-                         Nome VARCHAR(100) NOT NULL,
-                         CPF VARCHAR(14) NOT NULL UNIQUE,
-                         Email VARCHAR(100),
-                         Data_Nascimento DATE NOT NULL
+CREATE TABLE Usuario (
+                         id_usuario SERIAL PRIMARY KEY,
+                         nome VARCHAR(100) NOT NULL,
+                         cpf VARCHAR(14) NOT NULL UNIQUE,
+                         data_nascimento DATE NOT NULL,
+                         email VARCHAR(100) NOT NULL UNIQUE,
+                         senha VARCHAR(255) NOT NULL
 );
+
 CREATE TABLE Conta(
                        ID_Conta SERIAL PRIMARY KEY,
                        Agencia VARCHAR(10) NOT NULL,
@@ -14,13 +16,7 @@ CREATE TABLE Conta(
                        ID_Cliente INTEGER NOT NULL,
                        FOREIGN KEY(ID_Cliente) REFERENCES Cliente (ID_Cliente)
 );
-CREATE TABLE Usuario(
-                         ID_Usuario SERIAL PRIMARY KEY,
-                         Login VARCHAR(100) NOT NULL UNIQUE,
-                         Senha VARCHAR(255) NOT NULL,
-                         ID_Cliente INTEGER NOT NULL UNIQUE,
-                         FOREIGN KEY(ID_Cliente) REFERENCES Cliente (ID_Cliente)
-);
+
 CREATE TABLE Transacao(
                            ID_Transacao BIGSERIAL PRIMARY KEY,
                            Valor NUMERIC(15, 2) NOT NULL,

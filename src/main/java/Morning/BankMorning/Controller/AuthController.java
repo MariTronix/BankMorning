@@ -29,7 +29,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginRequest body) {
         // 1. Busca usuário pelo email
-        Usuario usuario = repository.findByLogin(body.login())
+        Usuario usuario = repository.findByEmail(body.email())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
         // 2. Compara a senha enviada com o hash do banco

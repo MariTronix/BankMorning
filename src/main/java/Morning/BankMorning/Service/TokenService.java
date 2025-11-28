@@ -1,5 +1,7 @@
 package Morning.BankMorning.Service;
 
+import Morning.BankMorning.Exception.ArgumentoInvalidoException;
+import Morning.BankMorning.Exception.CredencialInvalidaException;
 import Morning.BankMorning.Model.Conta;
 import Morning.BankMorning.Model.Usuario;
 import com.auth0.jwt.JWT;
@@ -20,45 +22,48 @@ public class TokenService {
     public String gerarToken(Conta conta) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
-            return JWT.create()
-                    .withIssuer("BankMorningAPI")
-                    .withSubject(conta.getUsuario().getCpf())
-                    .withExpiresAt(gerarDataExpiracao())
-                    .sign(algorithm);
+
+            Usuario usuario = conta.getUsuario();
+
+            if (usuario == null) {
+                throw new ArgumentoInvalidoException("Conta Não Possui Usuário Associado.");
+            }
+
+            return JWT.create().withIssuer("BankMorningAPI").withSubject(usuario.getCpf()).withClaim("email", usuario.getEmail()).withClaim("role", usuario.getRole().name()).withExpiresAt(gerarDataExpiracao()).sign(algorithm);
+        } catch (ArgumentoInvalidoException e) {
+            throw new ArgumentoInvalidoException("Falha nos dados ao gerar Token");
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao gerar token", e);
+            throw new RuntimeException("Erro interno ao gerar Token.");
         }
     }
 
-    // VALIDAR TOKEN
     public boolean validarToken(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
 
-            JWT.require(algorithm)
-                    .withIssuer("BankMorningAPI")
-                    .build()
-                    .verify(token);
+            JWT.require(algorithm).withIssuer("BankMorningAPI").build().verify(token);
 
             return true;
+        } catch (CredencialInvalidaException e) {
+            throw new CredencialInvalidaException("Falha na validação de Token.");
         } catch (Exception e) {
-            return false;
+            throw new RuntimeException("Erro interno ao validar Token.");
         }
     }
 
     public String getSubject(String token) {
-        Algorithm algorithm = Algorithm.HMAC256(secret);
+        try {
+            Algorithm algorithm = Algorithm.HMAC256(secret);
 
-        return JWT.require(algorithm)
-                .withIssuer("BankMorningAPI")
-                .build()
-                .verify(token)
-                .getSubject();
+            return JWT.require(algorithm).withIssuer("BankMorningAPI").build().verify(token).getSubject();
+        } catch (CredencialInvalidaException e) {
+            throw new CredencialInvalidaException("Token inválido ou expirado.");
+        } catch (Exception e) {
+            throw new RuntimeException("Erro interno ao validar Token.");
+        }
     }
 
     private Instant gerarDataExpiracao() {
-        return LocalDateTime.now()
-                .plusHours(2)
-                .toInstant(ZoneOffset.of("-03:00"));
+        return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }
 }

@@ -25,11 +25,11 @@ public class Transacao {
     private LocalDateTime dataHora;
 
     @ManyToOne
-    @JoinColumn(name = "cpf_conta_origem")
+    @JoinColumn(name = "id_conta_origem")
     private Conta contaOrigem;
 
     @ManyToOne
-    @JoinColumn(name = "cpf_conta_destino")
+    @JoinColumn(name = "id_conta_destino")
     private Conta contaDestino;
 
     @PrePersist

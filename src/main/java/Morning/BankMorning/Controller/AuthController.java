@@ -1,9 +1,7 @@
 package Morning.BankMorning.Controller;
 
-import Morning.BankMorning.Dto.CadastroRequest;
-import Morning.BankMorning.Dto.ContaResponse;
-import Morning.BankMorning.Dto.LoginRequest;
-import Morning.BankMorning.Dto.UsuarioResponse;
+import Morning.BankMorning.Dto.*;
+import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Repository.UsuarioRepository;
 import Morning.BankMorning.Service.ContaService;
 import Morning.BankMorning.Service.TokenService;
@@ -11,6 +9,9 @@ import Morning.BankMorning.Service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,6 +33,9 @@ public class AuthController {
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
     @PostMapping("/cadastro")
     public ResponseEntity<UsuarioResponse> cadastro(@RequestBody @Valid CadastroRequest cadastroRequest) {
 
@@ -43,8 +47,17 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginRequest body) {
 
-        ContaResponse response = contaService.login(body);
+        var authenticationToke = new UsernamePasswordAuthenticationToken(
+                body.login(),
+                body.senha()
+        );
 
-        return ResponseEntity.ok(response);
+        Authentication authentication = authenticationManager.authenticate(authenticationToke);
+
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+
+        String token = tokenService.gerarToken(usuario.getConta());
+
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 }

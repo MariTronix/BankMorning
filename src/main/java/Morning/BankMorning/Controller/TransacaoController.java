@@ -1,8 +1,11 @@
 package Morning.BankMorning.Controller;
 
 import Morning.BankMorning.Dto.TransacaoRequest;
+import Morning.BankMorning.Dto.TransacaoResponse;
+import Morning.BankMorning.Model.Transacao;
 import Morning.BankMorning.Service.TransacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,20 +17,20 @@ public class TransacaoController {
     private TransacaoService transacaoService;
 
     @PostMapping("/depositar")
-    public ResponseEntity<String> depositar(@RequestBody TransacaoRequest request) {
-        transacaoService.depositar(request);
-        return ResponseEntity.ok("Depósito realizado com sucesso!");
+    public ResponseEntity<TransacaoResponse> depositar(@RequestBody TransacaoRequest request) {
+        TransacaoResponse response = transacaoService.depositar(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/sacar")
-    public ResponseEntity<String> sacar(@RequestBody TransacaoRequest request) {
-        transacaoService.sacar(request);
-        return ResponseEntity.ok("Saque realizado com sucesso!");
+    public ResponseEntity<TransacaoResponse> sacar(@RequestBody TransacaoRequest request) {
+        TransacaoResponse response = transacaoService.sacar(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/transferir")
-    public ResponseEntity<String> transferir(@RequestBody TransacaoRequest request) {
-        transacaoService.transferir(request);
-        return ResponseEntity.ok("Transferência realizada com sucesso!");
+    public ResponseEntity<TransacaoResponse> transferir(@RequestBody TransacaoRequest request) {
+        TransacaoResponse response = transacaoService.transferir(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

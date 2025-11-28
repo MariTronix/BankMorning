@@ -4,6 +4,9 @@ import Morning.BankMorning.Dto.CadastroRequest;
 import Morning.BankMorning.Dto.ContaRequest;
 import Morning.BankMorning.Dto.UsuarioRequest;
 import Morning.BankMorning.Dto.UsuarioResponse;
+import Morning.BankMorning.Enum.Role;
+import Morning.BankMorning.Exception.ArgumentoInvalidoException;
+import Morning.BankMorning.Exception.RecursoNaoEncontradoException;
 import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
@@ -46,11 +49,11 @@ public class UsuarioService {
     public UsuarioResponse cadastrarNovoUsuarioeConta(CadastroRequest request) {
 
         usuarioRepository.findByCpf(request.cpf()).ifPresent(usuario -> {
-            throw new IllegalArgumentException("Já existe um usuário com este CPF");
+            throw new ArgumentoInvalidoException("Já existe um usuário com este CPF");
         });
 
         usuarioRepository.findByEmail(request.email()).ifPresent(usuario -> {
-            throw new IllegalArgumentException("Já existe um usuário com este EMAIL");
+            throw new ArgumentoInvalidoException("Já existe um usuário com este EMAIL");
         });
 
         Usuario usuarioSendoCadastrado = new Usuario();
@@ -58,6 +61,7 @@ public class UsuarioService {
         usuarioSendoCadastrado.setEmail(request.email());
         usuarioSendoCadastrado.setNome(request.nome());
         usuarioSendoCadastrado.setDataNascimento(request.data_nascimento());
+        usuarioSendoCadastrado.setRole(Role.ROLE_USUARIO);
 
         Usuario usuarioCadastrado = usuarioRepository.save(usuarioSendoCadastrado);
 
@@ -71,13 +75,13 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse atualizarUsuario(Integer id, UsuarioRequest usuarioRequest) {
 
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado com ID: " + id));
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado com ID: " + id));
 
         if (usuarioRequest.email() != null && !usuarioRequest.email().isEmpty()) {
 
             usuarioRepository.findByEmail(usuarioRequest.email()).ifPresent(usuarioEncontrado -> {
                 if (!usuarioEncontrado.getIdUsuario().equals(id)) {
-                    throw new IllegalArgumentException("Já existe um usuário com este Email: " + usuarioRequest.email());
+                    throw new ArgumentoInvalidoException("Já existe um usuário com este Email: " + usuarioRequest.email());
                 }
             });
 
@@ -99,7 +103,7 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponse deletarUsuario(Integer id) {
-        Usuario usuario = usuarioRepository.findById(id).orElse(null);
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
 
         usuarioRepository.delete(usuario);
 

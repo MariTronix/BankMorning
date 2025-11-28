@@ -2,8 +2,9 @@ package Morning.BankMorning.Service;
 
 import Morning.BankMorning.Dto.ContaRequest;
 import Morning.BankMorning.Dto.ContaResponse;
-import Morning.BankMorning.Dto.LoginRequest;
 import Morning.BankMorning.Dto.UsuarioResponse;
+import Morning.BankMorning.Exception.ArgumentoInvalidoException;
+import Morning.BankMorning.Exception.RecursoNaoEncontradoException;
 import Morning.BankMorning.Model.Conta;
 import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Repository.ContaRepository;
@@ -33,10 +34,7 @@ public class ContaService {
     @Autowired
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    @Autowired
-    private TokenService tokenService;
-
-    private static Conta converterParaModel(ContaRequest request) {
+    public Conta converterParaModel(ContaRequest request) {
         if (request == null) {
             return null;
         }
@@ -46,7 +44,7 @@ public class ContaService {
         return conta;
     }
 
-    private static ContaResponse converterParaResponse(Conta conta) {
+    public   ContaResponse converterParaResponse(Conta conta) {
         if (conta == null) {
             return null;
         }
@@ -58,7 +56,7 @@ public class ContaService {
 
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorId(Integer id) {
-        Conta conta = contaRepository.findById(id).orElse(null);
+        Conta conta = contaRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
 
         return converterParaResponse(conta);
     }
@@ -66,7 +64,7 @@ public class ContaService {
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorCpfUsuario(String cpf) {
 
-        Conta conta = contaRepository.findByUsuario_Cpf(cpf).orElse(null);
+        Conta conta = contaRepository.findByUsuario_Cpf(cpf).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
 
         return converterParaResponse(conta);
     }
@@ -74,7 +72,7 @@ public class ContaService {
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorEmailUsuario(String email) {
 
-        Conta conta = contaRepository.findByUsuario_Email(email).orElse(null);
+        Conta conta = contaRepository.findByUsuario_Email(email).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
 
         return converterParaResponse(conta);
     }
@@ -82,7 +80,7 @@ public class ContaService {
     @Transactional
     public ContaResponse criarConta(Usuario usuario, ContaRequest contaRequest) {
         if (contaRepository.findByUsuario_Cpf(usuario.getCpf()).isPresent()) {
-            throw new IllegalArgumentException("Usuario já possui uma conta");
+            throw new ArgumentoInvalidoException("Usuario já possui uma conta");
         }
 
         Conta conta = new Conta();
@@ -93,24 +91,6 @@ public class ContaService {
 
         Conta contaSalva = contaRepository.save(conta);
 
-        String token = tokenService.gerarToken(contaSalva);
-
         return converterParaResponse(contaSalva);
-    }
-
-
-    @Transactional(readOnly = true)
-    public ContaResponse login(LoginRequest loginRequest) {
-        Usuario usuario = usuarioRepository.findByEmail(loginRequest.login()).or(() -> usuarioRepository.findByCpf(loginRequest.login())).orElseThrow(() -> new IllegalArgumentException("Credenciais inválidas"));
-
-        Conta conta = usuario.getConta();
-
-        if (!passwordEncoder.matches(loginRequest.senha(), conta.getSenha())) {
-            throw new IllegalArgumentException("Login ou Senha Incorretos!");
-        }
-
-        String token = tokenService.gerarToken(conta);
-
-        return converterParaResponse(conta);
     }
 }

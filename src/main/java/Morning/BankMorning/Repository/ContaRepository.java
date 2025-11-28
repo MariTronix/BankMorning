@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface ContaRepository extends JpaRepository<Conta, Integer> {
-    Optional<Conta> findById(Integer id);
     Optional<Conta> findByUsuario_Cpf(String cpf);
     Optional<Conta> findByUsuario_Email(String email);
 }

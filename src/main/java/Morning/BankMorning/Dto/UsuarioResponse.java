@@ -1,10 +1,4 @@
 package Morning.BankMorning.Dto;
 
-import lombok.Data;
-
-@Data
-public class UsuarioResponse {
-    private Integer IdUsuario;
-    private String nome;
-    private String email;
+public record UsuarioResponse(String nome, String cpf, String email) {
 }

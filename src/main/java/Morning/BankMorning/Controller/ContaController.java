@@ -2,7 +2,6 @@ package Morning.BankMorning.Controller;
 
 import Morning.BankMorning.Model.Conta;
 import Morning.BankMorning.Repository.ContaRepository;
-import Morning.BankMorning.Service.ContaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

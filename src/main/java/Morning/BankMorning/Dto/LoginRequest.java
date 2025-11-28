@@ -1,4 +1,4 @@
 package Morning.BankMorning.Dto;
 
-public record LoginRequest(String email, String senha) {
+public record LoginRequest(String login, String senha) {
 }

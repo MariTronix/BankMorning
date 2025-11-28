@@ -1,5 +1,6 @@
 package Morning.BankMorning.Model;
 
+import Morning.BankMorning.Enum.TipoDeTransacao;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,17 +19,21 @@ public class Transacao {
     private BigDecimal valor;
 
     @Column(nullable = false)
-    private String tipo; // "Deposito" ou "Transferência"
+    private TipoDeTransacao tipo;
+
+    @Column(nullable = false)
+    private LocalDateTime dataHora;
 
     @ManyToOne
-    @JoinColumn(name = "id_conta_origem")
+    @JoinColumn(name = "cpf_conta_origem")
     private Conta contaOrigem;
 
     @ManyToOne
-    @JoinColumn(name = "id_conta_destino")
+    @JoinColumn(name = "cpf_conta_destino")
     private Conta contaDestino;
 
-    public void setDataHora(LocalDateTime now) {
-
+    @PrePersist
+    public void prePersist() {
+        dataHora = LocalDateTime.now();
     }
 }

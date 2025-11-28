@@ -1,5 +1,7 @@
 package Morning.BankMorning.Service;
 
+import Morning.BankMorning.Dto.TransacaoRequest;
+import Morning.BankMorning.Enum.TipoDeTransacao;
 import Morning.BankMorning.Model.Conta;
 import Morning.BankMorning.Model.Transacao;
 import Morning.BankMorning.Repository.ContaRepository;
@@ -9,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Service
 public class TransacaoService {
@@ -20,58 +21,87 @@ public class TransacaoService {
     @Autowired
     private TransacaoRepository transacaoRepository;
 
-    // --- DEPÓSITO ---
     @Transactional
-    public void depositar(Integer idConta, BigDecimal valor) {
-        if (valor.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor do depósito deve ser maior que zero.");
+    private Transacao salvarTransacao(TransacaoRequest transacaoRequest, TipoDeTransacao tipoDeTransacao) {
+        Transacao transacao = new Transacao();
+        Conta contaOrigem = transacao.getContaOrigem();
+        Conta contaDestino = transacao.getContaDestino();
+
+        if (contaOrigem != null) {
+            contaOrigem = contaRepository.findByUsuario_Cpf(transacaoRequest.cpfContaOrigem()).orElseThrow(() -> new IllegalArgumentException("Cpf de Origem Inválido"));
         }
 
-        Conta conta = contaRepository.findById(idConta)
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada."));
+        if (contaDestino != null) {
+            contaDestino = contaRepository.findByUsuario_Cpf(transacaoRequest.cpfContaDestino()).orElseThrow(() -> new IllegalArgumentException());
+        }
 
-        // Adiciona saldo
-        conta.setSaldo(conta.getSaldo().add(valor));
-        contaRepository.save(conta);
+        transacao.setValor(transacaoRequest.valor());
+        transacao.setTipo(tipoDeTransacao);
+        transacao.setContaOrigem(contaOrigem);
+        transacao.setContaDestino(contaDestino);
 
-        // Salva histórico
-        salvarHistorico(null, conta, valor, "DEPOSITO");
+        return transacaoRepository.save(transacao);
     }
 
-    // --- TRANSFERÊNCIA ---
     @Transactional
-    public void transferir(Integer idOrigem, Integer idDestino, BigDecimal valor) {
-        if (valor.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor da transferência deve ser maior que zero.");
+    public Transacao depositar(TransacaoRequest transacaoRequest) {
+
+        if (transacaoRequest.valor().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O valor do depósito deve ser positivo.");
         }
 
-        Conta origem = contaRepository.findById(idOrigem)
-                .orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada."));
+        Conta contaDestino = contaRepository.findByUsuario_Cpf(transacaoRequest.cpfContaDestino()).orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada."));
 
-        Conta destino = contaRepository.findById(idDestino)
-                .orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada."));
 
-        if (origem.getSaldo().compareTo(valor) < 0) {
+        BigDecimal novoSaldo = contaDestino.getSaldo().add(transacaoRequest.valor());
+        contaDestino.setSaldo(novoSaldo);
+        contaRepository.save(contaDestino);
+
+        return salvarTransacao(transacaoRequest, TipoDeTransacao.DEPOSITO);
+    }
+
+    @Transactional
+    public Transacao sacar(TransacaoRequest transacaoRequest) {
+        Conta contaOrigem = contaRepository.findByUsuario_Cpf(transacaoRequest.cpfContaOrigem()).orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada."));
+
+        if (transacaoRequest.valor().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O valor do saque deve ser positivo.");
+        }
+
+        if (contaOrigem.getSaldo().compareTo(transacaoRequest.valor()) < 0) {
             throw new IllegalArgumentException("Saldo insuficiente.");
         }
 
-        origem.setSaldo(origem.getSaldo().subtract(valor));
-        destino.setSaldo(destino.getSaldo().add(valor));
+        BigDecimal novoSaldo = contaOrigem.getSaldo().subtract(transacaoRequest.valor());
+        contaOrigem.setSaldo(novoSaldo);
+        contaRepository.save(contaOrigem);
 
-        contaRepository.save(origem);
-        contaRepository.save(destino);
-
-        salvarHistorico(origem, destino, valor, "TRANSFERENCIA");
+        return salvarTransacao(transacaoRequest, TipoDeTransacao.SAQUE);
     }
 
-    // Método auxiliar privado
-    private void salvarHistorico(Conta origem, Conta destino, BigDecimal valor, String tipo) {
-        Transacao t = new Transacao();
-        t.setDataHora(LocalDateTime.now());
-        t.setValor(valor);
-        t.setTipo(tipo);
-        t.setContaOrigem(origem);
-        t.setContaDestino(destino);
-        transacaoRepository.save(t);
+    @Transactional
+    public Transacao transferir(TransacaoRequest transacaoRequest) {
+
+        if (transacaoRequest.valor().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("O valor da transferência deve ser positivo.");
+        }
+
+        Conta contaOrigem = contaRepository.findByUsuario_Cpf(transacaoRequest.cpfContaOrigem()).orElseThrow(() -> new IllegalArgumentException("Conta de origem não encontrada."));
+
+        Conta contaDestino = contaRepository.findByUsuario_Cpf(transacaoRequest.cpfContaDestino()).orElseThrow(() -> new IllegalArgumentException("Conta de destino não encontrada."));
+
+        BigDecimal valor = transacaoRequest.valor();
+
+        if (contaOrigem.getSaldo().compareTo(valor) < 0) {
+            throw new IllegalArgumentException("Saldo insuficiente para realizar a transferência.");
+        }
+
+        contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(valor));
+        contaRepository.save(contaOrigem);
+
+        contaDestino.setSaldo(contaDestino.getSaldo().add(valor));
+        contaRepository.save(contaDestino);
+
+        return salvarTransacao(transacaoRequest, TipoDeTransacao.TRANSFERENCIA);
     }
 }

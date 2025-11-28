@@ -1,5 +1,6 @@
 package Morning.BankMorning.Service;
 
+import Morning.BankMorning.Model.Conta;
 import Morning.BankMorning.Model.Usuario;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -16,13 +17,12 @@ public class TokenService {
     @Value("${api.security.token.secret}")
     private String secret;
 
-    // GERAR TOKEN
-    public String gerarToken(Usuario usuario) {
+    public String gerarToken(Conta conta) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             return JWT.create()
                     .withIssuer("BankMorningAPI")
-                    .withSubject(usuario.getEmail()) // identificador
+                    .withSubject(conta.getUsuario().getCpf())
                     .withExpiresAt(gerarDataExpiracao())
                     .sign(algorithm);
         } catch (Exception e) {
@@ -46,7 +46,6 @@ public class TokenService {
         }
     }
 
-    // PEGAR EMAIL DO TOKEN
     public String getSubject(String token) {
         Algorithm algorithm = Algorithm.HMAC256(secret);
 

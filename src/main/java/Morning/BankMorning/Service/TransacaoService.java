@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TransacaoService {
@@ -133,6 +135,16 @@ public class TransacaoService {
 
         // 6. Salvar e Retornar
         return salvarTransacaoGen(valor, TipoDeTransacao.TRANSFERENCIA, contaOrigem, contaDestino);
+    }
+
+    public List<TransacaoResponse> listarExtrato(Conta contaDoUsuario) {
+        // Passamos a mesma conta duas vezes porque queremos saber onde ela entrou OU onde ela saiu
+        List<Transacao> transacoes = transacaoRepository.findAllByContaOrigemOrContaDestinoOrderByDataHoraDesc(contaDoUsuario, contaDoUsuario);
+
+        // Transforma a lista de Transacao (Banco) em TransacaoResponse (DTO)
+        return transacoes.stream()
+                .map(this::converterParaResponse)
+                .collect(Collectors.toList());
     }
 
     // --- MÉTODO AUXILIAR GENÉRICO PARA SALVAR NO BANCO ---

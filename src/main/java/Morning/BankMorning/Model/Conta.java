@@ -25,6 +25,9 @@ public class Conta {
     @Column(nullable = false)
     private String agencia = "777";
 
+    @Column(name = "numero_conta")
+    private String numeroConta;
+
     @Column(nullable = false)
     private BigDecimal saldo;
 

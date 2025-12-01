@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 
 @Service
@@ -88,6 +89,7 @@ public class ContaService {
         conta.setUsuario(usuario);
         conta.setSaldo(BigDecimal.ZERO);
         conta.setAgencia("777");
+        conta.setNumeroConta(Integer.toString(new Random().nextInt(90000) + 10000));
 
         Conta contaSalva = contaRepository.save(conta);
 

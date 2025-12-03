@@ -8,14 +8,12 @@ import Morning.BankMorning.Model.Conta;
 import Morning.BankMorning.Model.Transacao;
 import Morning.BankMorning.Repository.ContaRepository;
 import Morning.BankMorning.Repository.TransacaoRepository;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 

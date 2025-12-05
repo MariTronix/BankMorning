@@ -1,12 +1,19 @@
 package Morning.BankMorning.Service;
 
+import Morning.BankMorning.Dto.CadastroRequest;
+import Morning.BankMorning.Dto.ContaRequest;
 import Morning.BankMorning.Dto.UsuarioRequest;
 import Morning.BankMorning.Dto.UsuarioResponse;
+import Morning.BankMorning.Enum.Role;
+import Morning.BankMorning.Exception.ArgumentoInvalidoException;
+import Morning.BankMorning.Exception.RecursoNaoEncontradoException;
 import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Repository.UsuarioRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UsuarioService {
@@ -20,35 +27,86 @@ public class UsuarioService {
     @Autowired
     private ContaService contaService;
 
-
-    public UsuarioResponse criarUsuario(UsuarioRequest request) {
-
-        if (usuarioRepository.existsByCpf(request.getCpf())) {
-            throw new IllegalArgumentException("Já existe um usuário com este CPF");
+    private static Usuario converterParaModel(UsuarioRequest usuarioRequest) {
+        if (usuarioRequest == null) {
+            return null;
         }
-
-        if (usuarioRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Já existe um usuário com este EMAIL");
-        }
-
         Usuario usuario = new Usuario();
-        usuario.setNome(request.getNome());
-        usuario.setCpf(request.getCpf());
-        usuario.setEmail(request.getEmail());
-        usuario.setDataNascimento(request.getData_nascimento());
+        BeanUtils.copyProperties(usuarioRequest, usuario);
 
-        String senhaCriptografada = passwordEncoder.encode(request.getSenha());
-        usuario.setSenha(senhaCriptografada);
+        return usuario;
+    }
 
-        Usuario salvo = usuarioRepository.save(usuario);
+    public static UsuarioResponse converterParaResponse(Usuario usuario) {
+        if (usuario == null) {
+            return null;
+        }
 
-        contaService.criarContaParaUsuario(salvo);
+        return new UsuarioResponse(usuario.getNome(), usuario.getEmail(), usuario.getCpf());
+    }
 
-        UsuarioResponse response = new UsuarioResponse();
-        response.setIdUsuario(salvo.getIdUsuario());
-        response.setNome(salvo.getNome());
-        response.setEmail(salvo.getEmail());
+    @Transactional
+    public UsuarioResponse cadastrarNovoUsuarioeConta(CadastroRequest request) {
 
-        return response;
+        usuarioRepository.findByCpf(request.cpf()).ifPresent(usuario -> {
+            throw new ArgumentoInvalidoException("Já existe um usuário com este CPF");
+        });
+
+        usuarioRepository.findByEmail(request.email()).ifPresent(usuario -> {
+            throw new ArgumentoInvalidoException("Já existe um usuário com este EMAIL");
+        });
+
+        Usuario usuarioSendoCadastrado = new Usuario();
+        usuarioSendoCadastrado.setCpf(request.cpf());
+        usuarioSendoCadastrado.setEmail(request.email());
+        usuarioSendoCadastrado.setNome(request.nome());
+        usuarioSendoCadastrado.setDataNascimento(request.data_nascimento());
+        usuarioSendoCadastrado.setRole(Role.ROLE_USUARIO);
+
+        Usuario usuarioCadastrado = usuarioRepository.save(usuarioSendoCadastrado);
+
+        ContaRequest contaRequest = new ContaRequest(request.senha(), usuarioCadastrado);
+
+        contaService.criarConta(usuarioCadastrado, contaRequest);
+
+        return converterParaResponse(usuarioCadastrado);
+    }
+
+    @Transactional
+    public UsuarioResponse atualizarUsuario(Integer id, UsuarioRequest usuarioRequest) {
+
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado com ID: " + id));
+
+        if (usuarioRequest.email() != null && !usuarioRequest.email().isEmpty()) {
+
+            usuarioRepository.findByEmail(usuarioRequest.email()).ifPresent(usuarioEncontrado -> {
+                if (!usuarioEncontrado.getIdUsuario().equals(id)) {
+                    throw new ArgumentoInvalidoException("Já existe um usuário com este Email: " + usuarioRequest.email());
+                }
+            });
+
+            usuario.setEmail(usuarioRequest.email());
+        }
+
+        if (usuarioRequest.nome() != null && !usuarioRequest.nome().isEmpty()) {
+            usuario.setNome(usuarioRequest.nome());
+        }
+
+        if (usuarioRequest.data_nascimento() != null) {
+            usuario.setDataNascimento(usuarioRequest.data_nascimento());
+        }
+
+        Usuario usuarioAtualizado = usuarioRepository.save(usuario);
+
+        return converterParaResponse(usuarioAtualizado);
+    }
+
+    @Transactional
+    public UsuarioResponse deletarUsuario(Integer id) {
+        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+
+        usuarioRepository.delete(usuario);
+
+        return converterParaResponse(usuario);
     }
 }

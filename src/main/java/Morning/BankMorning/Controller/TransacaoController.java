@@ -1,9 +1,10 @@
 package Morning.BankMorning.Controller;
 
-import Morning.BankMorning.Dto.DepositoRequest;
-import Morning.BankMorning.Dto.TransferenciaRequest;
+import Morning.BankMorning.Dto.*;
+import Morning.BankMorning.Model.Transacao;
 import Morning.BankMorning.Service.TransacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,17 +13,23 @@ import org.springframework.web.bind.annotation.*;
 public class TransacaoController {
 
     @Autowired
-    private TransacaoService service;
+    private TransacaoService transacaoService;
 
     @PostMapping("/depositar")
-    public ResponseEntity<String> depositar(@RequestBody DepositoRequest request) {
-        service.depositar(request.getIdConta(), request.getValor());
-        return ResponseEntity.ok("Depósito realizado com sucesso!");
+    public ResponseEntity<TransacaoResponse> depositar(@RequestBody DepositoRequest request) { // <--- AQUI MUDOU
+        TransacaoResponse response = transacaoService.depositar(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/sacar")
+    public ResponseEntity<TransacaoResponse> sacar(@RequestBody SaqueRequest request) { // <--- Mudou aqui
+        TransacaoResponse response = transacaoService.sacar(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
     @PostMapping("/transferir")
-    public ResponseEntity<String> transferir(@RequestBody TransferenciaRequest request) {
-        service.transferir(request.getIdContaOrigem(), request.getIdContaDestino(), request.getValor());
-        return ResponseEntity.ok("Transferência realizada com sucesso!");
+    public ResponseEntity transferir(@RequestBody TransferenciaRequest request){ // <--- MUDE DE TransacaoRequest PARA TransferenciaRequest
+        TransacaoResponse response = transacaoService.transferir(request);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

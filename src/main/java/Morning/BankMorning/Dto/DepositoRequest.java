@@ -4,23 +4,21 @@ import java.math.BigDecimal;
 
 public class DepositoRequest {
 
-    private Integer idConta;
+    private String numeroConta; // Agora sim: String e Numero da Conta!
+    private String agencia;     // Opcional: bom ter para validar
     private BigDecimal valor;
 
-    // --- GETTERS (Para o Controller conseguir ler) ---
-    public Integer getIdConta() {
-        return idConta;
-    }
+    // --- Getters e Setters ---
+    public String getNumeroConta() { return numeroConta; }
+    public void setNumeroConta(String numeroConta) { this.numeroConta = numeroConta; }
 
-    public void setIdConta(Integer idConta) {
-        this.idConta = idConta;
-    }
+    public String getAgencia() { return agencia; }
+    public void setAgencia(String agencia) { this.agencia = agencia; }
 
-    public BigDecimal getValor() {
-        return valor;
-    }
+    public BigDecimal getValor() { return valor; }
+    public void setValor(BigDecimal valor) { this.valor = valor; }
 
-    public void setValor(BigDecimal valor) {
-        this.valor = valor;
-    }
+
+
+
 }

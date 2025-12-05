@@ -1,8 +1,14 @@
 package Morning.BankMorning.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @Entity
@@ -14,15 +20,28 @@ public class Conta {
     private Integer idConta;
 
     @Column(nullable = false)
-    private Integer numeroConta;
+    private String senha;
 
     @Column(nullable = false)
-    private Integer agencia;
+    private String agencia = "777";
+
+    @Column(name = "numero_conta")
+    private String numeroConta;
 
     @Column(nullable = false)
     private BigDecimal saldo;
 
-    @OneToOne
-    @JoinColumn(name = "id_usuario", referencedColumnName = "idUsuario")
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime dataCriacao;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "id_usuario")
+    @JsonIgnore
     private Usuario usuario;
+
+    @PrePersist
+    public void prePersist() {
+        this.dataCriacao = LocalDateTime.now();
+    }
 }

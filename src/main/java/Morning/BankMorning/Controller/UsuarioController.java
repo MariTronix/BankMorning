@@ -16,9 +16,19 @@ public class UsuarioController {
     @Autowired
     private UsuarioService service;
 
-    @PostMapping
-    public ResponseEntity<UsuarioResponse> cadastrar(@RequestBody @Valid UsuarioRequest request) {
-        UsuarioResponse response = service.criarUsuario(request);
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+
+    @PutMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> atualizar(@PathVariable Integer id, @RequestBody @Valid UsuarioRequest request) {
+        UsuarioResponse response = service.atualizarUsuario(id, request);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<UsuarioResponse> deletar(@PathVariable @Valid Integer id) {
+        UsuarioResponse response = service.deletarUsuario(id);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
 }

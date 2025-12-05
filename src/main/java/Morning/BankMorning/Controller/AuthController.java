@@ -1,12 +1,17 @@
 package Morning.BankMorning.Controller;
 
-import Morning.BankMorning.Dto.LoginRequest;
-import Morning.BankMorning.Dto.LoginResponse;
+import Morning.BankMorning.Dto.*;
 import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Repository.UsuarioRepository;
+import Morning.BankMorning.Service.ContaService;
 import Morning.BankMorning.Service.TokenService;
+import Morning.BankMorning.Service.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,28 +23,41 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     @Autowired
-    private UsuarioRepository repository;
+    private UsuarioService usuarioService;
 
+    @Autowired
+    private ContaService contaService;
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Autowired
     private TokenService tokenService;
 
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @PostMapping("/cadastro")
+    public ResponseEntity<UsuarioResponse> cadastro(@RequestBody @Valid CadastroRequest cadastroRequest) {
+
+        UsuarioResponse response = usuarioService.cadastrarNovoUsuarioeConta(cadastroRequest);
+
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody LoginRequest body) {
-        // 1. Busca usuário pelo email
-        Usuario usuario = repository.findByEmail(body.email())
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
 
-        // 2. Compara a senha enviada com o hash do banco
-        if (passwordEncoder.matches(body.senha(), usuario.getSenha())) {
-            // 3. Gera e devolve o token
-            String token = tokenService.gerarToken(usuario);
-            return ResponseEntity.ok(new LoginResponse(token));
-        }
+        var authenticationToke = new UsernamePasswordAuthenticationToken(
+                body.login(),
+                body.senha()
+        );
 
-        // 4. Senha errada
-        return ResponseEntity.badRequest().build();
+        Authentication authentication = authenticationManager.authenticate(authenticationToke);
+
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+
+        String token = tokenService.gerarToken(usuario.getConta());
+
+        return ResponseEntity.ok(new LoginResponse(token));
     }
 }

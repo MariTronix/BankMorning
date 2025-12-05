@@ -3,33 +3,15 @@ package Morning.BankMorning.Dto;
 import java.math.BigDecimal;
 
 public class TransferenciaRequest {
-
-    private Integer idContaOrigem;
-    private Integer idContaDestino;
+    private String numeroContaOrigem;  // <--- ISSO BATE COM O POSTMAN
+    private String numeroContaDestino; // <--- ISSO BATE COM O POSTMAN
     private BigDecimal valor;
 
-    // --- GETTERS ---
-    public Integer getIdContaOrigem() {
-        return idContaOrigem;
-    }
-
-    public void setIdContaOrigem(Integer idContaOrigem) {
-        this.idContaOrigem = idContaOrigem;
-    }
-
-    public Integer getIdContaDestino() {
-        return idContaDestino;
-    }
-
-    public void setIdContaDestino(Integer idContaDestino) {
-        this.idContaDestino = idContaDestino;
-    }
-
-    public BigDecimal getValor() {
-        return valor;
-    }
-
-    public void setValor(BigDecimal valor) {
-        this.valor = valor;
-    }
+    // Getters e Setters
+    public String getNumeroContaOrigem() { return numeroContaOrigem; }
+    public void setNumeroContaOrigem(String numeroContaOrigem) { this.numeroContaOrigem = numeroContaOrigem; }
+    public String getNumeroContaDestino() { return numeroContaDestino; }
+    public void setNumeroContaDestino(String numeroContaDestino) { this.numeroContaDestino = numeroContaDestino; }
+    public BigDecimal getValor() { return valor; }
+    public void setValor(BigDecimal valor) { this.valor = valor; }
 }

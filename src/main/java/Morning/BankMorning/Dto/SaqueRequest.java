@@ -1,15 +1,11 @@
 package Morning.BankMorning.Dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
-public class SaqueRequest {
-    private String numeroConta;
-    private BigDecimal valor;
-
-    // Getters e Setters
-    public String getNumeroConta() { return numeroConta; }
-    public void setNumeroConta(String numeroConta) { this.numeroConta = numeroConta; }
-
-    public BigDecimal getValor() { return valor; }
-    public void setValor(BigDecimal valor) { this.valor = valor; }
-}
+// Saque: O usuário logado saca de sua própria conta (definida pelo JWT)
+public record SaqueRequest(
+        @NotNull(message = "O valor é obrigatório.")
+        @DecimalMin(value = "0.01", message = "O valor deve ser positivo.")
+        BigDecimal valor) {}

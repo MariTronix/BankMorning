@@ -1,17 +1,15 @@
 package Morning.BankMorning.Dto;
 
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
-public class TransferenciaRequest {
-    private String numeroContaOrigem;  // <--- ISSO BATE COM O POSTMAN
-    private String numeroContaDestino; // <--- ISSO BATE COM O POSTMAN
-    private BigDecimal valor;
+// Transferência: A conta de origem é definida pelo JWT. Apenas o destino é enviado.
+public record TransferenciaRequest(
+        @NotNull(message = "O valor é obrigatório.")
+        @DecimalMin(value = "0.01", message = "O valor deve ser positivo.")
+        BigDecimal valor,
 
-    // Getters e Setters
-    public String getNumeroContaOrigem() { return numeroContaOrigem; }
-    public void setNumeroContaOrigem(String numeroContaOrigem) { this.numeroContaOrigem = numeroContaOrigem; }
-    public String getNumeroContaDestino() { return numeroContaDestino; }
-    public void setNumeroContaDestino(String numeroContaDestino) { this.numeroContaDestino = numeroContaDestino; }
-    public BigDecimal getValor() { return valor; }
-    public void setValor(BigDecimal valor) { this.valor = valor; }
-}
+        @NotBlank(message = "O número da conta de destino é obrigatório.")
+        String numeroContaDestino) {}

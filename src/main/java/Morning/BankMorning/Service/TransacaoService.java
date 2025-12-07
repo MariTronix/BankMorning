@@ -24,7 +24,7 @@ public class TransacaoService {
     private ContaRepository contaRepository;
 
     @Autowired
-    @Lazy // @Lazy resolve o ciclo de dependência se o ContaService também chamar o TransacaoService
+    @Lazy
     private ContaService contaService;
 
     @Autowired
@@ -39,104 +39,98 @@ public class TransacaoService {
         String cpfContaOrigem = null;
         String cpfContaDestino = null;
 
-        if (transacao.getContaOrigem() != null) {
+        // Garante a checagem de NULL para evitar erro 500 no Extrato
+        if (transacao.getContaOrigem() != null && transacao.getContaOrigem().getUsuario() != null) {
             cpfContaOrigem = transacao.getContaOrigem().getUsuario().getCpf();
         }
 
-        if (transacao.getContaDestino() != null) {
+        if (transacao.getContaDestino() != null && transacao.getContaDestino().getUsuario() != null) {
             cpfContaDestino = transacao.getContaDestino().getUsuario().getCpf();
         }
 
         return new TransacaoResponse(cpfContaOrigem, cpfContaDestino, transacao.getValor(), transacao.getTipo(), transacao.getDataHora());
     }
 
-    // --- DEPÓSITO (Agora usa NUMERO DA CONTA) ---
-
+    // --- DEPÓSITO ---
     @Transactional
-    public TransacaoResponse depositar(DepositoRequest request) { // Recebe DepositoRequest
+    public TransacaoResponse depositar(Conta contaOrigem, DepositoRequest request) {
 
-        // 1. Validação
-        if (request.getValor() == null || request.getValor().compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor do depósito deve ser maior que zero.");
         }
 
-        // 2. Busca por Numero da Conta
-        Conta contaDestino = contaRepository.findByNumeroConta(request.getNumeroConta())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta de destino não encontrada (Número: " + request.getNumeroConta() + ")"));
+        // 1. Buscar conta de destino pelo número
+        Conta contaDestino = contaRepository.findByNumeroConta(request.numeroContaDestino())
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta de destino não encontrada."));
 
-        // 3. Lógica
-        BigDecimal novoSaldo = contaDestino.getSaldo().add(request.getValor());
+        // 2. Lógica
+        BigDecimal novoSaldo = contaDestino.getSaldo().add(request.valor());
         contaDestino.setSaldo(novoSaldo);
         contaRepository.save(contaDestino);
 
-        // 4. Salvar Histórico (Usa o método genérico abaixo)
-        return salvarTransacaoGen(request.getValor(), TipoDeTransacao.DEPOSITO, null, contaDestino);
+        // 3. Salvar Histórico (Origem nula = dinheiro externo)
+        return salvarTransacaoGen(request.valor(), TipoDeTransacao.DEPOSITO, null, contaDestino);
     }
 
-    // --- SAQUE (Mantive usando CPF via TransacaoRequest) ---
-
+    // --- SAQUE ---
     @Transactional
-    public TransacaoResponse sacar(SaqueRequest request) { // <--- Mudou para SaqueRequest
+    public TransacaoResponse sacar(Conta contaOrigem, SaqueRequest request) {
 
-        // 1. Validar Valor
-        if (request.getValor().compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor do saque deve ser positivo.");
         }
 
-        // 2. Buscar Conta pelo NÚMERO
-        Conta contaOrigem = contaRepository.findByNumeroConta(request.getNumeroConta())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada."));
-
-        // 3. Verificar Saldo
-        if (contaOrigem.getSaldo().compareTo(request.getValor()) < 0) {
+        // 1. Verificar Saldo
+        if (contaOrigem.getSaldo().compareTo(request.valor()) < 0) {
             throw new ArgumentoInvalidoException("Saldo insuficiente.");
         }
 
-        // 4. Retirar o dinheiro
-        BigDecimal novoSaldo = contaOrigem.getSaldo().subtract(request.getValor());
+        // 2. Retirar o dinheiro
+        BigDecimal novoSaldo = contaOrigem.getSaldo().subtract(request.valor());
         contaOrigem.setSaldo(novoSaldo);
         contaRepository.save(contaOrigem);
 
-        // 5. Salvar Histórico
-        return salvarTransacaoGen(request.getValor(), TipoDeTransacao.SAQUE, contaOrigem, null);
+        // 3. Salvar Histórico (Destino nulo = dinheiro saindo)
+        return salvarTransacaoGen(request.valor(), TipoDeTransacao.SAQUE, contaOrigem, null);
     }
 
 
+    // --- TRANSFERÊNCIA ---
     @Transactional
-    public TransacaoResponse transferir(TransferenciaRequest request) { // <--- MUDANÇA 1: Aceita o DTO novo
+    public TransacaoResponse transferir(Conta contaOrigem, TransferenciaRequest request) {
 
-        // 1. Validação do valor
-        if (request.getValor().compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor da transferência deve ser positivo.");
         }
 
-        // 2. Buscar Conta ORIGEM pelo NÚMERO (Mudança 2)
-        Conta contaOrigem = contaRepository.findByNumeroConta(request.getNumeroContaOrigem())
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta de origem não encontrada."));
-
-        // 3. Buscar Conta DESTINO pelo NÚMERO (Mudança 3)
-        Conta contaDestino = contaRepository.findByNumeroConta(request.getNumeroContaDestino())
+        // 1. Buscar Conta DESTINO pelo NÚMERO
+        Conta contaDestino = contaRepository.findByNumeroConta(request.numeroContaDestino())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta de destino não encontrada."));
 
-        // 4. Validar Saldo
-        BigDecimal valor = request.getValor();
+        // 2. Validar Saldo e Mesma Conta
+        BigDecimal valor = request.valor();
         if (contaOrigem.getSaldo().compareTo(valor) < 0) {
             throw new ArgumentoInvalidoException("Saldo insuficiente.");
         }
 
-        // 5. Atualizar saldos
+        if (contaOrigem.equals(contaDestino)) {
+            throw new ArgumentoInvalidoException("Não é possível transferir para a mesma conta.");
+        }
+
+        // 3. Atualizar saldos
         contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(valor));
         contaRepository.save(contaOrigem);
 
         contaDestino.setSaldo(contaDestino.getSaldo().add(valor));
         contaRepository.save(contaDestino);
 
-        // 6. Salvar e Retornar
+        // 4. Salvar
         return salvarTransacaoGen(valor, TipoDeTransacao.TRANSFERENCIA, contaOrigem, contaDestino);
     }
 
+    // --- EXTRATO (Lógica de leitura) ---
     public List<TransacaoResponse> listarExtrato(Conta contaDoUsuario) {
-        // Passamos a mesma conta duas vezes porque queremos saber onde ela entrou OU onde ela saiu
+        // Busca todas as transações onde a contaDoUsuario é a origem OU o destino
         List<Transacao> transacoes = transacaoRepository.findAllByContaOrigemOrContaDestinoOrderByDataHoraDesc(contaDoUsuario, contaDoUsuario);
 
         // Transforma a lista de Transacao (Banco) em TransacaoResponse (DTO)

@@ -3,16 +3,12 @@ package Morning.BankMorning.Model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Entity
 @Table(name = "conta")
-
 public class Conta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,9 +29,10 @@ public class Conta {
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
+    // CORREÇÃO: Removendo @OnDelete (O CascadeType.ALL em Usuario já lida com a deleção)
+    // Manter FetchType.EAGER é crucial para o login funcionar!
     @OneToOne(fetch = FetchType.EAGER)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "id_usuario")
+    @JoinColumn(name = "id_usuario", nullable = false) // A Conta é a proprietária da chave
     @JsonIgnore
     private Usuario usuario;
 

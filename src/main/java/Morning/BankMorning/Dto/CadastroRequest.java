@@ -10,6 +10,6 @@ import java.time.LocalDate;
 public record CadastroRequest(@NotBlank(message = "O nome é obrigatório") String nome,
                               @NotBlank(message = "O CPF é obrigatório") @CPF(message = "Cpf Inválido") String cpf,
                               @NotBlank(message = "O Email é obrigatório") @Email(message = "Email Inválido") String email,
-                              @NotNull(message = "A data de nascimento é obrigatória") LocalDate data_nascimento,
+                              @NotNull(message = "A data de nascimento é obrigatória") LocalDate dataNascimento,
                               @NotBlank(message = "A senha é obrigatória") String senha) {
 }

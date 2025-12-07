@@ -2,5 +2,5 @@ package Morning.BankMorning.Dto;
 
 import java.math.BigDecimal;
 
-public record ContaResponse(Integer idConta, String agencia, BigDecimal saldo, UsuarioResponse usuario) {
+public record ContaResponse(Integer idConta, String agencia, BigDecimal saldo, String numeroConta, UsuarioResponse usuario) {
 }

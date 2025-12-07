@@ -11,8 +11,7 @@ import Morning.BankMorning.Repository.ContaRepository;
 import Morning.BankMorning.Repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,11 +28,9 @@ public class ContaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Lazy
     @Autowired
-    private static UsuarioService usuarioService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private UsuarioService usuarioService;
 
     public Conta converterParaModel(ContaRequest request) {
         if (request == null) {
@@ -45,14 +42,24 @@ public class ContaService {
         return conta;
     }
 
-    public   ContaResponse converterParaResponse(Conta conta) {
+    public ContaResponse converterParaResponse(Conta conta) {
         if (conta == null) {
             return null;
         }
 
-        UsuarioResponse usuarioResponse = usuarioService.converterParaResponse(conta.getUsuario());
+        // A potencial falha (500) está aqui. Garante que se a conta existir, o usuário seja carregado.
+        UsuarioResponse usuarioResponse = conta.getUsuario() != null
+                ? usuarioService.converterParaResponse(conta.getUsuario())
+                : null;
 
-        return new ContaResponse(conta.getIdConta(), conta.getAgencia(), conta.getSaldo(), usuarioResponse);
+        // CORREÇÃO: Garantir que o numeroConta seja incluído no DTO de resposta
+        return new ContaResponse(
+                conta.getIdConta(),
+                conta.getAgencia(),
+                conta.getSaldo(),
+                conta.getNumeroConta(), // <--- INCLUSÃO DO NUMERO DA CONTA
+                usuarioResponse
+        );
     }
 
     @Transactional(readOnly = true)
@@ -62,6 +69,20 @@ public class ContaService {
         return converterParaResponse(conta);
     }
 
+    /**
+     * CORREÇÃO FINAL PARA O DASHBOARD: Usa o E-mail (identificador do JWT) para buscar a Conta.
+     */
+    @Transactional(readOnly = true)
+    public BigDecimal buscarSaldoPorCpf(String identificador) { // Nome alterado para refletir que não é necessariamente CPF
+
+        // CORRIGIDO: Usando o método que busca pelo E-mail do usuário (findByUsuario_Email)
+        Conta conta = contaRepository.findByUsuario_Email(identificador)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada para o usuário logado."));
+
+        return conta.getSaldo();
+    }
+
+    // Métodos existentes...
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorCpfUsuario(String cpf) {
 
@@ -85,7 +106,10 @@ public class ContaService {
         }
 
         Conta conta = new Conta();
-        conta.setSenha(passwordEncoder.encode(contaRequest.senha()));
+
+        // A senha JÁ vem criptografada do UsuarioService. Apenas salve.
+        conta.setSenha(contaRequest.senha());
+
         conta.setUsuario(usuario);
         conta.setSaldo(BigDecimal.ZERO);
         conta.setAgencia("777");

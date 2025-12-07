@@ -22,7 +22,7 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder; // Injeção do Codificador
 
     @Autowired
     private ContaService contaService;
@@ -60,12 +60,18 @@ public class UsuarioService {
         usuarioSendoCadastrado.setCpf(request.cpf());
         usuarioSendoCadastrado.setEmail(request.email());
         usuarioSendoCadastrado.setNome(request.nome());
-        usuarioSendoCadastrado.setDataNascimento(request.data_nascimento());
+        usuarioSendoCadastrado.setDataNascimento(request.dataNascimento());
         usuarioSendoCadastrado.setRole(Role.ROLE_USUARIO);
 
         Usuario usuarioCadastrado = usuarioRepository.save(usuarioSendoCadastrado);
 
-        ContaRequest contaRequest = new ContaRequest(request.senha(), usuarioCadastrado);
+        // =========================================================================
+        // CORREÇÃO CRÍTICA: CRIPTOGRAFAR A SENHA ANTES DE CRIAR A CONTA
+        // =========================================================================
+        String senhaCriptografada = passwordEncoder.encode(request.senha());
+
+        // Passa a senha JÁ CRIPTOGRAFADA para o DTO da Conta
+        ContaRequest contaRequest = new ContaRequest(senhaCriptografada, usuarioCadastrado);
 
         contaService.criarConta(usuarioCadastrado, contaRequest);
 

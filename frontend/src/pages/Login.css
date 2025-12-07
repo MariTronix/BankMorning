@@ -1,0 +1,224 @@
+/* Importar uma fonte Sans-serif limpa */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Cores do projeto */
+:root {
+    --primary-orange: #FF6600; 
+    --secondary-blue: #1E3A5F; 
+    --light-background: #F7F9FC; 
+    --text-color: #333; 
+    --error-red: #EF4444; 
+    --border-color: #e0e0e0; 
+}
+
+/* ------------------------------------------- */
+/* NOVO LAYOUT DE DUAS COLUNAS (SPLIT LAYOUT)  */
+/* ------------------------------------------- */
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--light-background); 
+    min-height: 100vh; 
+    color: var(--text-color);
+    overflow: hidden; 
+}
+
+/* Contêiner principal que divide a tela */
+.login-split-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Coluna 1: Área Visual (Lado Esquerdo - 60% da Tela) */
+.visual-area-login {
+    flex: 3; /* Ocupa 60% (3 partes de 5) */
+
+    background-image: url('../assets/login.jpg'); 
+    background-size: cover; 
+    background-position: center; 
+    
+    position: relative; 
+    overflow: hidden; 
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    z-index: 1; 
+}
+
+/* Overlay Laranja (Cria a sobreposição de cor da marca) */
+.visual-area::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.8; 
+    z-index: 0;
+}
+
+.visual-content {
+    color: white;
+    text-align: center;
+    max-width: 500px;
+    z-index: 2; /* Garante que o texto e logo fiquem acima do overlay */
+}
+
+.visual-content h1 {
+    font-size: 3.5rem; 
+    line-height: 1.1;
+    margin: 20px 0 10px;
+    font-weight: 700;
+}
+
+.visual-content p {
+    font-size: 1.2rem;
+    font-weight: 300;
+}
+
+.visual-logo-large {
+    max-width: 150px; 
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5)); 
+}
+
+
+/* Coluna 2: Área do Formulário (Lado Direito - 40% da Tela) */
+.form-area {
+    flex: 2; /* Ocupa 40% (2 partes de 5) */
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* ------------------------------------------- */
+/* ESTILOS DO FORMULÁRIO (Manutenção da UX)   */
+/* ------------------------------------------- */
+
+.login-box {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: none; 
+    width: 100%;
+    max-width: 380px; 
+    text-align: center;
+}
+
+.login-logo-small {
+    max-width: 80px; 
+    margin-bottom: 20px;
+}
+
+.login-title {
+    color: var(--secondary-blue);
+    font-size: 26px; 
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px; 
+}
+
+.form-group {
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--secondary-blue);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+    border-color: var(--primary-orange); 
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2); 
+}
+
+.login-button {
+    background-color: var(--primary-orange);
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 15px;
+}
+
+.login-button:hover {
+    background-color: #e65c00; 
+    transform: translateY(-2px); 
+}
+
+.login-message {
+    margin-top: 20px;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.login-message.error {
+    color: var(--error-red);
+    background-color: rgba(239, 68, 68, 0.1); 
+    border: 1px solid var(--error-red);
+}
+
+.register-link {
+    margin-top: 30px;
+    font-size: 15px;
+}
+
+.register-link button {
+    color: var(--primary-orange) !important;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 5px;
+    font-size: 15px;
+}
+
+.register-link button:hover {
+    color: var(--secondary-blue) !important;
+    text-decoration: underline;
+}
+
+/* Media Query: Para telas menores (Mobile) */
+@media (max-width: 768px) {
+    .visual-area {
+        display: none;
+    }
+    .form-area {
+        flex: 1; 
+    }
+    .login-box {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+    }
+}

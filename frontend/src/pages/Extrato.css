@@ -1,0 +1,100 @@
+/* Importar fonte (Reutilizando a do projeto) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Cores do projeto (Reutilizadas) */
+:root {
+    --primary-orange: #FF6600; 
+    --secondary-blue: #1E3A5F; 
+    --light-background: #F7F9FC; 
+    --text-color: #333; 
+    --credit-green: #10B981; /* Crédito (Depósito/Transferência Recebida) */
+    --debit-red: #EF4444; /* Débito (Saque/Transferência Enviada) */
+    --border-color: #e0e0e0; 
+}
+
+/* ------------------------------------------- */
+/* ESTRUTURA DA PÁGINA                         */
+/* ------------------------------------------- */
+.extrato-container {
+    padding: 30px;
+    max-width: 900px; /* Largura maior para tabela */
+    margin: 30px auto; /* Centraliza o container */
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.extrato-container h2 {
+    color: var(--secondary-blue);
+    font-size: 2rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* Botão Voltar */
+.back-button {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--secondary-blue);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: var(--light-background);
+}
+
+/* Mensagens de Erro */
+.error-message {
+    color: var(--debit-red);
+    background-color: rgba(239, 68, 68, 0.1); 
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+/* ------------------------------------------- */
+/* TABELA DE TRANSAÇÕES                        */
+/* ------------------------------------------- */
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse; /* Remove espaçamento entre bordas */
+    margin-top: 20px;
+}
+
+.transaction-table th, .transaction-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.transaction-table th {
+    background-color: var(--primary-orange); /* Cabeçalho escuro */
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.transaction-table tr:hover {
+    background-color: var(--light-background);
+}
+
+/* Coluna de Valor */
+.amount-cell {
+    font-weight: 700;
+}
+
+/* Destaque Crédito (Positivo) */
+.amount-credit {
+    color: var(--credit-green);
+}
+
+/* Destaque Débito (Negativo) */
+.amount-debit {
+    color: var(--debit-red);
+}

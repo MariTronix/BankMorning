@@ -1,0 +1,136 @@
+/* Importar fonte (Reutilizando a do projeto) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Cores do projeto (Reutilizando variáveis consistentes) */
+:root {
+    --primary-orange: #FF6600; 
+    --secondary-blue: #1E3A5F; 
+    --light-background: #F7F9FC; 
+    --text-color: #333; 
+    --credit-green: #10B981; 
+    --debit-red: #EF4444; 
+    --border-color: #e0e0e0; 
+}
+
+/* ------------------------------------------- */
+/* ESTRUTURA DA PÁGINA (Centralização)         */
+/* ------------------------------------------- */
+.transferencia-container {
+    /* Centraliza a caixa no meio da viewport */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: var(--light-background);
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Caixa Principal do Formulário (O Card) */
+.transferencia-box {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px; 
+    text-align: center;
+}
+
+.transferencia-box h2 {
+    color: var(--secondary-blue);
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+/* Formulário e Grupos de Input */
+.transferencia-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; 
+}
+
+.form-group-transfer {
+    text-align: left;
+}
+
+.form-group-transfer label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+
+/* Inputs (Reutilizando a classe form-input para padronização) */
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+    border-color: var(--primary-orange); 
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2); 
+}
+
+/* Botão de Confirmação */
+.confirm-transfer-button {
+    background-color: var(--primary-orange);
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 10px;
+}
+
+.confirm-transfer-button:hover {
+    background-color: #e65c00; 
+    transform: translateY(-2px); 
+}
+
+/* Botão Voltar */
+.back-button {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--secondary-blue);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: var(--light-background);
+}
+
+/* Mensagens de Feedback */
+.message-error {
+    color: var(--debit-red);
+    background-color: rgba(239, 68, 68, 0.1); 
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.message-success {
+    color: var(--credit-green);
+    background-color: rgba(16, 185, 129, 0.1); 
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 15px;
+    font-weight: bold;
+}

@@ -26,22 +26,33 @@ public class SecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // 1. Recupera o Token da requisição
         var token = recuperarToken(request);
 
         if (token != null) {
-            var login = tokenService.validarToken(token);
+            try {
+                // 2. Extrai o Subject (CPF) do token. O método getSubject devolve uma String.
+                var subject = tokenService.getSubject(token);
 
-            if (login != null && !login.isEmpty()) {
-                var usuario = repository.findByLogin(login).orElse(null);
+                // 3. Verifica se o subject (CPF) é válido e não está vazio
+                if (subject != null && !subject.isEmpty()) {
 
-                if (usuario != null) {
-                    var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    // 4. Busca o usuário no banco usando o CPF (findByCpf), pois é o que está no Subject do seu token
+                    var usuario = repository.findByCpf(subject).orElse(null);
+
+                    if (usuario != null) {
+                        // 5. Se o usuário existir, força a autenticação no contexto do Spring Security
+                        var authentication = new UsernamePasswordAuthenticationToken(usuario, null, usuario.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
+            } catch (Exception e) {
+                // Logar o erro se a validação do token falhar, mas permite o fluxo continuar
+                // Para não travar a aplicação, em caso de token expirado ou inválido
+                System.err.println("Erro ao processar token: " + e.getMessage());
             }
-
-            filterChain.doFilter(request, response);
         }
+        filterChain.doFilter(request, response);
     }
 
     private String recuperarToken(HttpServletRequest request) {

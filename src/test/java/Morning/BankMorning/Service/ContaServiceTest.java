@@ -50,7 +50,7 @@ class ContaServiceTest {
 
         // Mock do encoder de senha
         when(passwordEncoder.encode("senha123")).thenReturn("HASH_SENHA_SEGURA");
-//
+
         // Simula o salvamento e retorna a conta criada
         when(contaRepository.save(any(Conta.class))).thenAnswer(invocation -> {
             Conta c = invocation.getArgument(0);

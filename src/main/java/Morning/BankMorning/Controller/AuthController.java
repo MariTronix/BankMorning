@@ -1,8 +1,8 @@
 package Morning.BankMorning.Controller;
 
 import Morning.BankMorning.Dto.*;
+import Morning.BankMorning.Exception.ArgumentoInvalidoException;
 import Morning.BankMorning.Model.Usuario;
-import Morning.BankMorning.Service.ContaService;
 import Morning.BankMorning.Service.TokenService;
 import Morning.BankMorning.Service.UsuarioService;
 import jakarta.validation.Valid;
@@ -10,26 +10,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException; // Import necessário
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth") // CORREÇÃO: Usando /api/auth para corresponder ao front-end
+@RequestMapping("/auth") // Mantendo compatibilidade com seus testes
 public class AuthController {
 
     @Autowired
     private UsuarioService usuarioService;
-
-    @Autowired
-    private ContaService contaService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private TokenService tokenService;
@@ -37,60 +32,56 @@ public class AuthController {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    // DEFINIÇÃO DO DTO DE RESPOSTA (Se não estiver em um arquivo DTO separado)
-    public record UsuarioResponse(String message) {}
-    public record LoginResponse(String token) {}
-
-    // O método 'cadastro' já está correto com o try-catch
-    @PostMapping("/register")
+    @PostMapping("/cadastro")
     public ResponseEntity<UsuarioResponse> cadastro(@RequestBody @Valid CadastroRequest cadastroRequest) {
-        try {
-            usuarioService.cadastrarNovoUsuarioeConta(cadastroRequest);
-            return ResponseEntity.ok(new UsuarioResponse("Usuário cadastrado com sucesso."));
-
-        } catch (Exception e) {
-            System.err.println("Erro ao cadastrar usuário: " + e.getMessage());
-            e.printStackTrace();
-
-            if (e.getMessage() != null && (e.getMessage().contains("duplicado") || e.getMessage().contains("Unique"))) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(new UsuarioResponse("Erro: E-mail ou CPF já cadastrado."));
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UsuarioResponse("Erro ao cadastrar. Verifique os dados fornecidos."));
-        }
+        // Não precisa de try-catch aqui, o @ExceptionHandler cuida disso
+        UsuarioResponse response = usuarioService.cadastrarNovoUsuarioeConta(cadastroRequest);
+        return ResponseEntity.ok(response);
     }
 
-    // =========================================================================
-    // CORREÇÃO: ADIÇÃO DO try-catch NO LOGIN PARA EVITAR O ERRO 500
-    // =========================================================================
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody LoginRequest body) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest body) {
+        // O authenticationManager lança BadCredentialsException se a senha for errada
+        // Essa exceção será capturada pelo @ExceptionHandler(BadCredentialsException.class) lá embaixo
+        var authenticationToken = new UsernamePasswordAuthenticationToken(
+                body.login(),
+                body.senha()
+        );
 
-        try {
-            var authenticationToke = new UsernamePasswordAuthenticationToken(
-                    body.login(),
-                    body.senha()
-            );
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
-            // A autenticação lança exceção se as credenciais estiverem erradas
-            Authentication authentication = authenticationManager.authenticate(authenticationToke);
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        String token = tokenService.gerarToken(usuario.getConta());
 
-            Usuario usuario = (Usuario) authentication.getPrincipal();
+        return ResponseEntity.ok(new LoginResponse(token));
+    }
 
-            // Graças ao FetchType.EAGER que você implementou, esta linha deve funcionar agora:
-            String token = tokenService.gerarToken(usuario.getConta());
+    // --- TRATAMENTO DE ERROS LOCAL ---
 
-            return ResponseEntity.ok(new LoginResponse(token));
+    // 1. Captura erros de validação (@Valid) -> Retorna 400
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage()));
+        return ResponseEntity.badRequest().body(errors);
+    }
 
-        } catch (AuthenticationException e) {
-            // Captura falhas de credenciais (BadCredentialsException)
-            // O erro é 401 Unauthorized, mas usamos o DTO de mensagem
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new UsuarioResponse("Credenciais inválidas. Tente novamente."));
-        } catch (Exception e) {
-            // Captura NullPointerException (problema com getConta() ou TokenService)
-            System.err.println("Erro interno durante o login: " + e.getMessage());
-            e.printStackTrace();
-            // Retornar 500
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UsuarioResponse("Ocorreu um erro interno no servidor."));
-        }
+    // 2. Captura Regras de Negócio (ex: CPF duplicado) -> Retorna 400
+    @ExceptionHandler(ArgumentoInvalidoException.class)
+    public ResponseEntity<String> handleArgumentoInvalido(ArgumentoInvalidoException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    // 3. Captura Senha Incorreta -> Retorna 401
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<String> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
+    }
+
+    // 4. Captura Erros Gerais -> Retorna 500
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: " + ex.getMessage());
     }
 }

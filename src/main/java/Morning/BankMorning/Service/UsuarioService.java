@@ -9,9 +9,7 @@ import Morning.BankMorning.Exception.ArgumentoInvalidoException;
 import Morning.BankMorning.Exception.RecursoNaoEncontradoException;
 import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Repository.UsuarioRepository;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,37 +20,28 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // Injeção do Codificador
-
-    @Autowired
     private ContaService contaService;
 
-    private static Usuario converterParaModel(UsuarioRequest usuarioRequest) {
-        if (usuarioRequest == null) {
-            return null;
-        }
-        Usuario usuario = new Usuario();
-        BeanUtils.copyProperties(usuarioRequest, usuario);
-
-        return usuario;
-    }
-
-    public static UsuarioResponse converterParaResponse(Usuario usuario) {
+    /**
+     * Converte Model para DTO de Resposta.
+     * Ordem dos parâmetros ajustada para o Record (Nome, CPF, Email).
+     */
+    public UsuarioResponse converterParaResponse(Usuario usuario) {
         if (usuario == null) {
             return null;
         }
 
-        // Assumindo que a resposta do DTO (UsuarioResponse) está correta:
-        return new UsuarioResponse(usuario.getNome(), usuario.getEmail(), usuario.getCpf());
+        // Se o Record for (nome, cpf, email):
+        return new UsuarioResponse(
+                usuario.getNome(),
+                usuario.getCpf(), 
+                usuario.getEmail()
+        );
     }
 
-    // =========================================================================
-    // NOVO MÉTODO: BUSCA DE PERFIL (USADO PELO UsuarioController)
-    // =========================================================================
     /**
      * Busca um usuário pelo e-mail e converte para DTO.
-     * @param email O e-mail (identificador do JWT)
-     * @return UsuarioResponse
+     * Usado pelo UsuarioController para exibir o perfil.
      */
     @Transactional(readOnly = true)
     public UsuarioResponse buscarPerfilPorEmail(String email) {
@@ -61,7 +50,6 @@ public class UsuarioService {
 
         return converterParaResponse(usuario);
     }
-    // =========================================================================
 
     @Transactional
     public UsuarioResponse cadastrarNovoUsuarioeConta(CadastroRequest request) {
@@ -83,11 +71,8 @@ public class UsuarioService {
 
         Usuario usuarioCadastrado = usuarioRepository.save(usuarioSendoCadastrado);
 
-        // CORREÇÃO CRÍTICA: CRIPTOGRAFAR A SENHA ANTES DE CRIAR A CONTA
-        String senhaCriptografada = passwordEncoder.encode(request.senha());
-
-        // Passa a senha JÁ CRIPTOGRAFADA para o DTO da Conta
-        ContaRequest contaRequest = new ContaRequest(senhaCriptografada, usuarioCadastrado);
+        // Envia a senha CRUA. O ContaService criptografará.
+        ContaRequest contaRequest = new ContaRequest(request.senha(), usuarioCadastrado);
 
         contaService.criarConta(usuarioCadastrado, contaRequest);
 
@@ -97,16 +82,15 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse atualizarUsuario(Integer id, UsuarioRequest usuarioRequest) {
 
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado com ID: " + id));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado com ID: " + id));
 
         if (usuarioRequest.email() != null && !usuarioRequest.email().isEmpty()) {
-
             usuarioRepository.findByEmail(usuarioRequest.email()).ifPresent(usuarioEncontrado -> {
                 if (!usuarioEncontrado.getIdUsuario().equals(id)) {
                     throw new ArgumentoInvalidoException("Já existe um usuário com este Email: " + usuarioRequest.email());
                 }
             });
-
             usuario.setEmail(usuarioRequest.email());
         }
 
@@ -125,7 +109,8 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponse deletarUsuario(Integer id) {
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
 
         usuarioRepository.delete(usuario);
 

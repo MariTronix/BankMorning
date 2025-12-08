@@ -12,12 +12,12 @@ import Morning.BankMorning.Repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Random;
-
 
 @Service
 public class ContaService {
@@ -28,9 +28,12 @@ public class ContaService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @Lazy
     @Autowired
+    @Lazy // Essencial para evitar Ciclo de Dependência com UsuarioService
     private UsuarioService usuarioService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder; // Injetado pelo Spring (não use 'new' aqui)
 
     public Conta converterParaModel(ContaRequest request) {
         if (request == null) {
@@ -38,7 +41,6 @@ public class ContaService {
         }
         Conta conta = new Conta();
         BeanUtils.copyProperties(request, conta);
-
         return conta;
     }
 
@@ -47,8 +49,7 @@ public class ContaService {
             return null;
         }
 
-        // Se este método for chamado dentro de um método @Transactional,
-        // o acesso a conta.getUsuario() será resolvido (EAGER loading manual).
+        // Converte o usuário (se existir) usando o serviço lazy
         UsuarioResponse usuarioResponse = conta.getUsuario() != null
                 ? usuarioService.converterParaResponse(conta.getUsuario())
                 : null;
@@ -57,16 +58,17 @@ public class ContaService {
                 conta.getIdConta(),
                 conta.getAgencia(),
                 conta.getSaldo(),
-                conta.getNumeroConta(),
+                conta.getNumeroConta(), // Adicionado para bater com seu DTO
                 usuarioResponse
         );
     }
 
-    // Os métodos de leitura abaixo garantem a transação aberta para o Lazy Loading:
+    // --- MÉTODOS DE BUSCA ---
+
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorId(Integer id) {
-        Conta conta = contaRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
-
+        Conta conta = contaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
         return converterParaResponse(conta);
     }
 
@@ -74,35 +76,31 @@ public class ContaService {
     public BigDecimal buscarSaldoPorCpf(String identificador) {
         Conta conta = contaRepository.findByUsuario_Email(identificador)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada para o usuário logado."));
-
         return conta.getSaldo();
     }
 
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorCpfUsuario(String cpf) {
-        Conta conta = contaRepository.findByUsuario_Cpf(cpf).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
-
+        Conta conta = contaRepository.findByUsuario_Cpf(cpf)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
         return converterParaResponse(conta);
     }
 
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorEmailUsuario(String email) {
-        Conta conta = contaRepository.findByUsuario_Email(email).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
-
+        Conta conta = contaRepository.findByUsuario_Email(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
         return converterParaResponse(conta);
     }
 
-    // 💥 NOVO MÉTODO ADICIONADO (CORREÇÃO FINAL para o Controller/Service):
+    // Método auxiliar usado pelo TransacaoService
     @Transactional(readOnly = true)
     public Conta buscarContaModelPorEmailUsuario(String email) {
-        // Busca a conta e o usuário aninhado usando o repositório
-        Conta conta = contaRepository.findByUsuario_Email(email)
+        return contaRepository.findByUsuario_Email(email)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada para o usuário logado."));
-
-        // Retorna o objeto Model (Conta) que o TransacaoController precisa.
-        // A transação aberta garante que o Usuário (LAZY) esteja disponível se necessário.
-        return conta;
     }
+
+    // --- CRIAÇÃO DE CONTA ---
 
     @Transactional
     public ContaResponse criarConta(Usuario usuario, ContaRequest contaRequest) {
@@ -111,7 +109,10 @@ public class ContaService {
         }
 
         Conta conta = new Conta();
-        conta.setSenha(contaRequest.senha());
+        
+        // CORREÇÃO DE SEGURANÇA: Criptografar a senha antes de salvar
+        conta.setSenha(passwordEncoder.encode(contaRequest.senha()));
+        
         conta.setUsuario(usuario);
         conta.setSaldo(BigDecimal.ZERO);
         conta.setAgencia("777");

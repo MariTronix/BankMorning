@@ -72,6 +72,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // 1. Login/Cadastro (Rota pública)
                         .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/usuarios/cadastrar").permitAll()
+
 
                         // 2. Rotas Protegidas (Exigindo o prefixo /api/)
                         .requestMatchers(HttpMethod.GET, "/api/account/**").hasRole("USUARIO") // Saldo e outros dados da conta

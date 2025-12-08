@@ -22,10 +22,6 @@ public class UsuarioService {
     @Autowired
     private ContaService contaService;
 
-    /**
-     * Converte Model para DTO de Resposta.
-     * Ordem dos parâmetros ajustada para o Record (Nome, CPF, Email).
-     */
     public UsuarioResponse converterParaResponse(Usuario usuario) {
         if (usuario == null) {
             return null;
@@ -39,10 +35,6 @@ public class UsuarioService {
         );
     }
 
-    /**
-     * Busca um usuário pelo e-mail e converte para DTO.
-     * Usado pelo UsuarioController para exibir o perfil.
-     */
     @Transactional(readOnly = true)
     public UsuarioResponse buscarPerfilPorEmail(String email) {
         Usuario usuario = usuarioRepository.findByEmail(email)

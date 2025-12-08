@@ -91,7 +91,7 @@ class TransacaoServiceTest {
         Conta conta = criarContaMock("12345", new BigDecimal("100.00"));
 
         SaqueRequest request = new SaqueRequest();
-        request.setNumeroConta("12345");
+        // ❌ LINHA REMOVIDA: request.setNumeroConta("12345");
         request.setValor(new BigDecimal("40.00"));
 
         when(transacaoRepository.save(any(Transacao.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -108,20 +108,18 @@ class TransacaoServiceTest {
         Conta conta = criarContaMock("12345", new BigDecimal("10.00"));
 
         SaqueRequest request = new SaqueRequest();
-        request.setNumeroConta("12345");
+        // ❌ LINHA REMOVIDA: request.setNumeroConta("12345");
         request.setValor(new BigDecimal("50.00"));
 
         // Nota: Se o seu serviço usa 'contaOrigem' direto, talvez nem precise desse mock de repository,
         // mas mal não faz mantê-lo.
 
         assertThrows(ArgumentoInvalidoException.class, () -> {
-            // --- CORREÇÃO AQUI: Passe a 'conta' também ---
             transacaoService.sacar(conta, request);
-            // ---------------------------------------------
         });
 
         assertEquals(new BigDecimal("10.00"), conta.getSaldo());
-        verify(contaRepository, never()).save(conta);
+        verify(contaRepository, never()).save(any());
     }
 
 
@@ -133,7 +131,9 @@ class TransacaoServiceTest {
         Conta destino = criarContaMock("22222", new BigDecimal("50.00"));
 
         TransferenciaRequest request = new TransferenciaRequest();
-        request.setNumeroContaOrigem("11111");
+
+        // LINHA REMOVIDA: request.setNumeroContaOrigem("11111");
+
         request.setNumeroContaDestino("22222");
         request.setValor(new BigDecimal("100.00"));
 
@@ -159,4 +159,4 @@ class TransacaoServiceTest {
         c.setUsuario(u);
         return c;
     }
-}//
+}

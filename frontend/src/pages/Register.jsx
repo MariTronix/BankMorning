@@ -41,7 +41,7 @@ function Register() {
         };
 
         try {
-            const response = await axios.post(`${API_URL}/auth/register`, registrationData);
+            const response = await axios.post(`${API_URL}/usuarios/cadastrar`, registrationData);
             
             alert('Cadastro realizado com sucesso! Faça login para continuar.');
             navigate('/');

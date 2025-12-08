@@ -66,7 +66,7 @@ class UsuarioControllerTest {
         );
 
         // Ação: Faz o PUT
-        mockMvc.perform(put("/usuarios/" + idUsuarioExistente)
+        mockMvc.perform(put("/api/usuarios/" + idUsuarioExistente)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 // Verificação:
@@ -81,7 +81,7 @@ class UsuarioControllerTest {
         UsuarioRequest request = new UsuarioRequest("Nome", "email", LocalDate.now());
 
         // Ação: Faz o PUT sem a anotação @WithMockUser
-        mockMvc.perform(put("/usuarios/" + idUsuarioExistente)
+        mockMvc.perform(put("/api/usuarios/" + idUsuarioExistente)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isForbidden()); // Espera 403 Forbidden
@@ -92,7 +92,7 @@ class UsuarioControllerTest {
     @WithMockUser(roles = "USUARIO")
     void deletar_Sucesso() throws Exception {
         // Ação: Faz o DELETE
-        mockMvc.perform(delete("/usuarios/" + idUsuarioExistente))
+        mockMvc.perform(delete("/api/usuarios/" + idUsuarioExistente))
                 .andExpect(status().isOk());
 
         boolean existe = usuarioRepository.existsById(idUsuarioExistente);
@@ -104,7 +104,7 @@ class UsuarioControllerTest {
     @WithMockUser(roles = "USUARIO")
     void deletar_NaoEncontrado() throws Exception {
         // Tenta deletar um ID que com certeza não existe
-        mockMvc.perform(delete("/usuarios/" + 999999))
+        mockMvc.perform(delete("/api/usuarios/" + 999999))
                 .andExpect(status().isNotFound()); //O seu Service lança RecursoNaoEncontrado -> 404?
         // Se lançar 500 ou 400, ajuste aqui para isInternalServerError() ou isBadRequest()
     }

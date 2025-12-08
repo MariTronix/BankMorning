@@ -1,5 +1,6 @@
 package Morning.BankMorning.Controller;
 
+import Morning.BankMorning.Dto.CadastroRequest;
 import Morning.BankMorning.Dto.UsuarioRequest;
 import Morning.BankMorning.Dto.UsuarioResponse;
 import Morning.BankMorning.Service.UsuarioService;
@@ -44,6 +45,13 @@ public class UsuarioController {
         UsuarioResponse response = service.deletarUsuario(id);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @PostMapping("/cadastrar") // A URL final seria /api/usuarios/cadastrar
+    public ResponseEntity<UsuarioResponse> cadastrar(@RequestBody @Valid CadastroRequest request) {
+        // Você precisa ter esse método criarUsuario no seu Service
+        UsuarioResponse novoUsuario = service.cadastrarNovoUsuarioeConta(request);
+        return new ResponseEntity<>(novoUsuario, HttpStatus.CREATED);
     }
 
 }

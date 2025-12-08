@@ -54,15 +54,15 @@ class TransacaoControllerTest {
     }
 
     @Test
-    @DisplayName("POST /transacoes/depositar - Deve depositar com sucesso")
-    @WithMockUser(roles = "USUARIO")
+    @DisplayName("POST - Deve depositar com sucesso")
+    @WithMockUser(username = "u1@test.com", roles = "USUARIO")
     void depositar_Sucesso() throws Exception {
         // Usando Setters para criar o objeto
         DepositoRequest request = new DepositoRequest();
         request.setNumeroConta(contaPrincipal.getNumeroConta());
         request.setValor(new BigDecimal("500.00"));
 
-        mockMvc.perform(post("/transacoes/depositar")
+        mockMvc.perform(post("/api/transacoes/depositar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -75,8 +75,8 @@ class TransacaoControllerTest {
     }
 
     @Test
-    @DisplayName("POST /transacoes/sacar - Deve sacar com sucesso")
-    @WithMockUser(roles = "USUARIO")
+    @DisplayName("POST - Deve sacar com sucesso")
+    @WithMockUser(username = "u1@test.com", roles = "USUARIO")
     void sacar_Sucesso() throws Exception {
         // 1. Injeta saldo primeiro (simulação direta no banco)
         contaPrincipal.setSaldo(new BigDecimal("1000.00"));
@@ -84,11 +84,11 @@ class TransacaoControllerTest {
 
         // 2. Prepara o Request de Saque
         SaqueRequest request = new SaqueRequest();
-        request.setNumeroConta(contaPrincipal.getNumeroConta());
+        // ❌ REMOVIDO: request.setNumeroConta(contaPrincipal.getNumeroConta()); // O Controller obtém a origem do JWT
         request.setValor(new BigDecimal("200.00"));
 
         // 3. Executa
-        mockMvc.perform(post("/transacoes/sacar")
+        mockMvc.perform(post("/api/transacoes/sacar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -100,25 +100,24 @@ class TransacaoControllerTest {
     }
 
     @Test
-    @DisplayName("POST /transacoes/sacar - Deve retornar ERRO se saldo for insuficiente")
-    @WithMockUser(roles = "USUARIO")
+    @DisplayName("POST - Deve retornar ERRO se saldo for insuficiente")
+    @WithMockUser(username = "u1@test.com", roles = "USUARIO")
     void sacar_SemSaldo() throws Exception {
         // Conta começa com ZERO
         SaqueRequest request = new SaqueRequest();
-        request.setNumeroConta(contaPrincipal.getNumeroConta());
+        // ❌ REMOVIDO: request.setNumeroConta(contaPrincipal.getNumeroConta()); // O Controller obtém a origem do JWT
         request.setValor(new BigDecimal("50.00"));
 
-        mockMvc.perform(post("/transacoes/sacar")
+        mockMvc.perform(post("/api/transacoes/sacar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 // Esperamos um erro 400 (Bad Request) ou 500 dependendo de como sua ExceptionHandler trata
-                // Se der erro no teste, troque .isBadRequest() por .isInternalServerError()
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("POST /transacoes/transferir - Deve transferir entre contas")
-    @WithMockUser(roles = "USUARIO")
+    @DisplayName("POST - Deve transferir entre contas")
+    @WithMockUser(username = "u1@test.com", roles = "USUARIO")
     void transferir_Sucesso() throws Exception {
         // 1. Origem rica
         contaPrincipal.setSaldo(new BigDecimal("1000.00"));
@@ -126,12 +125,12 @@ class TransacaoControllerTest {
 
         // 2. Prepara Transferência
         TransferenciaRequest request = new TransferenciaRequest();
-        request.setNumeroContaOrigem(contaPrincipal.getNumeroConta());
+        // REMOVIDO: request.setNumeroContaOrigem(contaPrincipal.getNumeroConta());
         request.setNumeroContaDestino(contaSecundaria.getNumeroConta());
         request.setValor(new BigDecimal("300.00"));
 
         // 3. Executa
-        mockMvc.perform(post("/transacoes/transferir")
+        mockMvc.perform(post("/api/transacoes/transferir")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

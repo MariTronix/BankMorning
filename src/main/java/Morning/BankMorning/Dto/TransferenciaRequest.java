@@ -7,11 +7,6 @@ import java.math.BigDecimal;
 
 public class TransferenciaRequest {
 
-    // Mantemos a origem aqui para o Service usar.
-    // O Controller pode preencher isso automaticamente via Token ou receber do JSON.
-    @NotBlank(message = "O número da conta de origem é obrigatório.")
-    private String numeroContaOrigem;
-
     @NotBlank(message = "O número da conta de destino é obrigatório.")
     private String numeroContaDestino;
 
@@ -23,22 +18,15 @@ public class TransferenciaRequest {
     // Obrigatório para o Spring/Jackson converter o JSON
     public TransferenciaRequest() {}
 
-    // --- 2. CONSTRUTOR COMPLETO ---
-    // Usado nos Testes Unitários: new TransferenciaRequest("123", "456", valor);
-    public TransferenciaRequest(String numeroContaOrigem, String numeroContaDestino, BigDecimal valor) {
-        this.numeroContaOrigem = numeroContaOrigem;
+    // --- 2. CONSTRUTOR PARA OS TESTES (Simplificado) ---
+    // A origem NÃO é mais recebida do JSON.
+    public TransferenciaRequest(String numeroContaDestino, BigDecimal valor) {
         this.numeroContaDestino = numeroContaDestino;
         this.valor = valor;
     }
 
     // --- GETTERS E SETTERS ---
-    public String getNumeroContaOrigem() {
-        return numeroContaOrigem;
-    }
-
-    public void setNumeroContaOrigem(String numeroContaOrigem) {
-        this.numeroContaOrigem = numeroContaOrigem;
-    }
+    // Removido getNumeroContaOrigem() e setNumeroContaOrigem()
 
     public String getNumeroContaDestino() {
         return numeroContaDestino;

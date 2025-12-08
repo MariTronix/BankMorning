@@ -65,7 +65,7 @@ class AuthControllerTest {
         // 4. Teste
         LoginRequest loginErrado = new LoginRequest("111.111.111-11", "senhaErrada!!!");
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginErrado)))
                 .andExpect(status().isUnauthorized()); // 401
@@ -96,7 +96,7 @@ class AuthControllerTest {
 
         LoginRequest loginCorreto = new LoginRequest("222.222.222-22", "minhaSenhaSecreta");
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginCorreto)))
                 .andExpect(status().isOk()); // 200
@@ -113,7 +113,7 @@ class AuthControllerTest {
                 "senha123"
         );
 
-        mockMvc.perform(post("/auth/cadastro")
+        mockMvc.perform(post("/api/auth/cadastro")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest()); // 400 (capturado pelo ExceptionHandler)
@@ -124,7 +124,7 @@ class AuthControllerTest {
     void cadastro_CamposNulos() throws Exception {
         CadastroRequest request = new CadastroRequest(null, null, null, null, null);
 
-        mockMvc.perform(post("/auth/cadastro")
+        mockMvc.perform(post("/api/auth/cadastro")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest()); // 400

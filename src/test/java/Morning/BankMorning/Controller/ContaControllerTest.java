@@ -60,27 +60,27 @@ class ContaControllerTest {
     }
 
     @Test
-    @DisplayName("GET /contas/{id} - Deve retornar dados da conta quando autenticado")
+    @DisplayName("Deve retornar dados da conta quando autenticado")
     @WithMockUser(roles = "USUARIO") // Simula usuário logado
     void getConta_Sucesso() throws Exception {
-        mockMvc.perform(get("/contas/" + idContaExistente))
+        mockMvc.perform(get("/api/account/id/" + idContaExistente))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.numeroConta").value("12345"))
                 .andExpect(jsonPath("$.saldo").value(1500.00));
     }
 
     @Test
-    @DisplayName("GET /contas/{id} - Deve retornar 404 se a conta não existir")
+    @DisplayName("Deve retornar 404 se a conta não existir")
     @WithMockUser(roles = "USUARIO")
     void getConta_NaoEncontrada() throws Exception {
-        mockMvc.perform(get("/contas/" + 999999)) // ID inexistente
+        mockMvc.perform(get("/api/account/id/" + 999999)) // ID inexistente
                 .andExpect(status().isNotFound()); // Ou isInternalServerError() se sua exception não estiver tratada
     }
 
     @Test
-    @DisplayName("GET /contas/{id} - Deve retornar 403 se não estiver logado")
+    @DisplayName("Deve retornar 403 se não estiver logado")
     void getConta_SemToken_DeveFalhar() throws Exception {
-        mockMvc.perform(get("/contas/" + idContaExistente))
+        mockMvc.perform(get("/api/account/" + idContaExistente))
                 .andExpect(status().isForbidden());
     }
 }

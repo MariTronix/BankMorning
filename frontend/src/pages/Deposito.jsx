@@ -30,10 +30,10 @@ function Deposito() {
         }
 
         try {
-            const response = await axios.post(`${API_URL}/transacoes/depositar`, 
+            const response = await axios.post(`${API_URL}/transacoes/depositar`,
                 { 
                     valor: parseFloat(valor),
-                    numeroContaDestino: numeroContaDestino 
+                    numeroConta: numeroContaDestino 
                 },
                 {
                     headers: {

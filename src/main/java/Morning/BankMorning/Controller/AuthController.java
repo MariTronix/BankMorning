@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth") // Mantendo compatibilidade com seus testes
+@RequestMapping("/api/auth") // Mantendo compatibilidade com seus testes
 public class AuthController {
 
     @Autowired
@@ -56,7 +56,6 @@ public class AuthController {
         return ResponseEntity.ok(new LoginResponse(token));
     }
 
-    // --- TRATAMENTO DE ERROS LOCAL ---
 
     // 1. Captura erros de validação (@Valid) -> Retorna 400
     @ExceptionHandler(MethodArgumentNotValidException.class)

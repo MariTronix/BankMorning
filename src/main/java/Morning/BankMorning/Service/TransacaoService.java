@@ -53,43 +53,43 @@ public class TransacaoService {
 
     // --- DEPÓSITO ---
     @Transactional
-    public TransacaoResponse depositar(Conta contaOrigem, DepositoRequest request) {
-        if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
+    public TransacaoResponse depositar(DepositoRequest request) {
+        if (request.getValor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor do depósito deve ser maior que zero.");
         }
-        Conta contaDestino = contaRepository.findByNumeroConta(request.numeroContaDestino())
+        Conta contaDestino = contaRepository.findByNumeroConta(request.getNumeroConta())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta de destino não encontrada."));
-        BigDecimal novoSaldo = contaDestino.getSaldo().add(request.valor());
+        BigDecimal novoSaldo = contaDestino.getSaldo().add(request.getValor());
         contaDestino.setSaldo(novoSaldo);
         contaRepository.save(contaDestino);
-        return salvarTransacaoGen(request.valor(), TipoDeTransacao.DEPOSITO, null, contaDestino);
+        return salvarTransacaoGen(request.getValor(), TipoDeTransacao.DEPOSITO, null, contaDestino);
     }
 
     // --- SAQUE ---
     @Transactional
     public TransacaoResponse sacar(Conta contaOrigem, SaqueRequest request) {
-        if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.getValor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor do saque deve ser positivo.");
         }
-        if (contaOrigem.getSaldo().compareTo(request.valor()) < 0) {
+        if (contaOrigem.getSaldo().compareTo(request.getValor()) < 0) {
             throw new ArgumentoInvalidoException("Saldo insuficiente.");
         }
-        BigDecimal novoSaldo = contaOrigem.getSaldo().subtract(request.valor());
+        BigDecimal novoSaldo = contaOrigem.getSaldo().subtract(request.getValor());
         contaOrigem.setSaldo(novoSaldo);
         contaRepository.save(contaOrigem);
-        return salvarTransacaoGen(request.valor(), TipoDeTransacao.SAQUE, contaOrigem, null);
+        return salvarTransacaoGen(request.getValor(), TipoDeTransacao.SAQUE, contaOrigem, null);
     }
 
 
     // --- TRANSFERÊNCIA ---
     @Transactional
     public TransacaoResponse transferir(Conta contaOrigem, TransferenciaRequest request) {
-        if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
+        if (request.getValor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor da transferência deve ser positivo.");
         }
-        Conta contaDestino = contaRepository.findByNumeroConta(request.numeroContaDestino())
+        Conta contaDestino = contaRepository.findByNumeroConta(request.getNumeroContaDestino())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta de destino não encontrada."));
-        BigDecimal valor = request.valor();
+        BigDecimal valor = request.getValor();
         if (contaOrigem.getSaldo().compareTo(valor) < 0) {
             throw new ArgumentoInvalidoException("Saldo insuficiente.");
         }

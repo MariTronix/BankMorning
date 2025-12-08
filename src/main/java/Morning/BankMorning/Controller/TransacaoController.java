@@ -42,7 +42,7 @@ public class TransacaoController {
             @RequestBody @Valid DepositoRequest request) {
 
         Conta contaOrigem = getContaDoUsuario(principal);
-        TransacaoResponse response = transacaoService.depositar(contaOrigem, request);
+        TransacaoResponse response = transacaoService.depositar( request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

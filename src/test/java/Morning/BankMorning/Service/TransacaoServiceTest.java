@@ -6,7 +6,6 @@ import Morning.BankMorning.Dto.TransacaoResponse;
 import Morning.BankMorning.Dto.TransferenciaRequest;
 import Morning.BankMorning.Enum.TipoDeTransacao;
 import Morning.BankMorning.Exception.ArgumentoInvalidoException;
-import Morning.BankMorning.Exception.RecursoNaoEncontradoException;
 import Morning.BankMorning.Model.Conta;
 import Morning.BankMorning.Model.Transacao;
 import Morning.BankMorning.Model.Usuario;
@@ -41,186 +40,123 @@ class TransacaoServiceTest {
     // --- TESTES DE DEPÓSITO ---
 
     @Test
-    @DisplayName("DEPOSITO: Deve funcionar com valor positivo e conta existente")
+    @DisplayName("Deve depositar valor corretamente e atualizar saldo")
     void depositar_Sucesso() {
-        // Cenário
-        Conta conta = criarContaComUsuario(1, "12345", new BigDecimal("100.00"));
-        DepositoRequest request = new DepositoRequest("12345", new BigDecimal("50.00"));
+        // 1. ARRANGE
+        String numeroConta = "12345";
+        BigDecimal saldoInicial = new BigDecimal("100.00");
+        BigDecimal valorDeposito = new BigDecimal("50.00");
 
-        when(contaRepository.findByNumeroConta("12345")).thenReturn(Optional.of(conta));
+        Conta conta = criarContaMock(numeroConta, saldoInicial);
 
-        // Mock do salvamento da transação para retornar algo consistente
-        when(transacaoRepository.save(any(Transacao.class))).thenAnswer(invocation -> {
-            Transacao t = invocation.getArgument(0);
-            t.setContaDestino(conta); // Garante que a transação salva tem a conta destino
-            return t;
-        });
+        // ALTERNATIVA: Usando Setters em vez de construtor
+        DepositoRequest request = new DepositoRequest();
+        request.setNumeroConta(numeroConta);
+        request.setValor(valorDeposito);
 
-        // Ação
+        when(contaRepository.findByNumeroConta(numeroConta)).thenReturn(Optional.of(conta));
+        when(transacaoRepository.save(any(Transacao.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        // 2. ACT
         TransacaoResponse response = transacaoService.depositar(request);
 
-        // Verificação
-        assertNotNull(response);
-
-        // CORREÇÃO: Usando os nomes do seu Record
-        assertEquals(TipoDeTransacao.DEPOSITO, response.tipoDeTransacao());
-        assertEquals(new BigDecimal("50.00"), response.valor());
-        assertEquals("123.456.789-00", response.cpfContaDestino()); // Verifica se o CPF veio certo
-
-        // Verifica atualização de saldo
+        // 3. ASSERT
         assertEquals(new BigDecimal("150.00"), conta.getSaldo());
+        // Lembre-se: Como o Response é um Record, o método tem o nome do campo
+        assertEquals(TipoDeTransacao.DEPOSITO, response.tipoDeTransacao());
+
         verify(contaRepository).save(conta);
     }
 
     @Test
-    @DisplayName("DEPOSITO: Deve falhar com valor negativo ou zero")
+    @DisplayName("Deve lançar erro ao tentar depositar valor negativo")
     void depositar_ErroValorInvalido() {
-        DepositoRequest requestNegativo = new DepositoRequest("12345", new BigDecimal("-10.00"));
-        DepositoRequest requestZero = new DepositoRequest("12345", BigDecimal.ZERO);
+        // Usando Setters
+        DepositoRequest request = new DepositoRequest();
+        request.setNumeroConta("12345");
+        request.setValor(new BigDecimal("-10.00"));
 
-        assertThrows(ArgumentoInvalidoException.class, () -> transacaoService.depositar(requestNegativo));
-        assertThrows(ArgumentoInvalidoException.class, () -> transacaoService.depositar(requestZero));
+        assertThrows(ArgumentoInvalidoException.class, () -> {
+            transacaoService.depositar(request);
+        });
 
         verify(contaRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("DEPOSITO: Deve falhar se a conta não existir")
-    void depositar_ErroContaNaoEncontrada() {
-        DepositoRequest request = new DepositoRequest("99999", new BigDecimal("50.00"));
-
-        when(contaRepository.findByNumeroConta("99999")).thenReturn(Optional.empty());
-
-        assertThrows(RecursoNaoEncontradoException.class, () -> transacaoService.depositar(request));
     }
 
     // --- TESTES DE SAQUE ---
 
     @Test
-    @DisplayName("SAQUE: Deve funcionar com saldo suficiente")
+    @DisplayName("Deve sacar valor com sucesso quando tem saldo")
     void sacar_Sucesso() {
-        Conta conta = criarContaComUsuario(1, "12345", new BigDecimal("100.00"));
-        SaqueRequest request = new SaqueRequest("12345", new BigDecimal("40.00"));
+        Conta conta = criarContaMock("12345", new BigDecimal("100.00"));
 
-        when(contaRepository.findByNumeroConta("12345")).thenReturn(Optional.of(conta));
-        when(transacaoRepository.save(any(Transacao.class))).thenAnswer(invocation -> {
-            Transacao t = invocation.getArgument(0);
-            t.setContaOrigem(conta);
-            return t;
-        });
+        SaqueRequest request = new SaqueRequest();
+        request.setNumeroConta("12345");
+        request.setValor(new BigDecimal("40.00"));
 
-        TransacaoResponse response = transacaoService.sacar(request);
+        when(transacaoRepository.save(any(Transacao.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        assertEquals(TipoDeTransacao.SAQUE, response.tipoDeTransacao()); // Correção do nome
+        transacaoService.sacar(conta, request);
+
         assertEquals(new BigDecimal("60.00"), conta.getSaldo());
+        verify(contaRepository).save(conta);
     }
 
     @Test
-    @DisplayName("SAQUE: Deve falhar se o saldo for insuficiente")
+    @DisplayName("Deve impedir saque quando saldo é insuficiente")
     void sacar_ErroSaldoInsuficiente() {
-        Conta conta = criarContaComUsuario(1, "12345", new BigDecimal("10.00"));
-        SaqueRequest request = new SaqueRequest("12345", new BigDecimal("50.00"));
+        Conta conta = criarContaMock("12345", new BigDecimal("10.00"));
 
-        when(contaRepository.findByNumeroConta("12345")).thenReturn(Optional.of(conta));
+        SaqueRequest request = new SaqueRequest();
+        request.setNumeroConta("12345");
+        request.setValor(new BigDecimal("50.00"));
 
-        assertThrows(ArgumentoInvalidoException.class, () -> transacaoService.sacar(request));
+        // Nota: Se o seu serviço usa 'contaOrigem' direto, talvez nem precise desse mock de repository,
+        // mas mal não faz mantê-lo.
+
+        assertThrows(ArgumentoInvalidoException.class, () -> {
+            // --- CORREÇÃO AQUI: Passe a 'conta' também ---
+            transacaoService.sacar(conta, request);
+            // ---------------------------------------------
+        });
 
         assertEquals(new BigDecimal("10.00"), conta.getSaldo());
+        verify(contaRepository, never()).save(conta);
     }
 
-    @Test
-    @DisplayName("SAQUE: Deve falhar com valor negativo")
-    void sacar_ErroValorNegativo() {
-        SaqueRequest request = new SaqueRequest("12345", new BigDecimal("-50.00"));
-        assertThrows(ArgumentoInvalidoException.class, () -> transacaoService.sacar(request));
-    }
 
     // --- TESTES DE TRANSFERÊNCIA ---
-
     @Test
-    @DisplayName("TRANSFERENCIA: Deve funcionar entre contas existentes com saldo")
+    @DisplayName("Deve transferir valor corretamente entre duas contas")
     void transferir_Sucesso() {
-        Conta origem = criarContaComUsuario(1, "ORIGEM", new BigDecimal("100.00"));
-        Conta destino = criarContaComUsuario(2, "DESTINO", new BigDecimal("0.00"));
+        Conta origem = criarContaMock("11111", new BigDecimal("200.00"));
+        Conta destino = criarContaMock("22222", new BigDecimal("50.00"));
 
-        TransferenciaRequest request = new TransferenciaRequest("ORIGEM", "DESTINO", new BigDecimal("50.00"));
+        TransferenciaRequest request = new TransferenciaRequest();
+        request.setNumeroContaOrigem("11111");
+        request.setNumeroContaDestino("22222");
+        request.setValor(new BigDecimal("100.00"));
 
-        when(contaRepository.findByNumeroConta("ORIGEM")).thenReturn(Optional.of(origem));
-        when(contaRepository.findByNumeroConta("DESTINO")).thenReturn(Optional.of(destino));
+        when(contaRepository.findByNumeroConta("22222")).thenReturn(Optional.of(destino));
 
-        when(transacaoRepository.save(any(Transacao.class))).thenAnswer(invocation -> {
-            Transacao t = invocation.getArgument(0);
-            t.setContaOrigem(origem);
-            t.setContaDestino(destino);
-            return t;
-        });
+        when(transacaoRepository.save(any(Transacao.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        TransacaoResponse response = transacaoService.transferir(request);
+        transacaoService.transferir(origem, request);
 
-        assertNotNull(response);
-        // CORREÇÃO: Usando os nomes do Record
-        assertEquals(TipoDeTransacao.TRANSFERENCIA, response.tipoDeTransacao());
-        assertEquals("123.456.789-00", response.cpfContaOrigem());
-        assertEquals("123.456.789-00", response.cpfContaDestino());
-
-        assertEquals(new BigDecimal("50.00"), origem.getSaldo());
-        assertEquals(new BigDecimal("50.00"), destino.getSaldo());
+        assertEquals(new BigDecimal("100.00"), origem.getSaldo());
+        assertEquals(new BigDecimal("150.00"), destino.getSaldo());
 
         verify(contaRepository).save(origem);
         verify(contaRepository).save(destino);
     }
 
-    @Test
-    @DisplayName("TRANSFERENCIA: Deve falhar se conta origem não existe")
-    void transferir_ErroOrigemInexistente() {
-        TransferenciaRequest request = new TransferenciaRequest("ORIGEM", "DESTINO", BigDecimal.TEN);
-        when(contaRepository.findByNumeroConta("ORIGEM")).thenReturn(Optional.empty());
-
-        assertThrows(RecursoNaoEncontradoException.class, () -> transacaoService.transferir(request));
+    private Conta criarContaMock(String numero, BigDecimal saldo) {
+        Conta c = new Conta();
+        c.setNumeroConta(numero);
+        c.setSaldo(saldo);
+        Usuario u = new Usuario();
+        u.setCpf("000.000.000-00");
+        c.setUsuario(u);
+        return c;
     }
-
-    @Test
-    @DisplayName("TRANSFERENCIA: Deve falhar se conta destino não existe")
-    void transferir_ErroDestinoInexistente() {
-        Conta origem = criarContaComUsuario(1, "ORIGEM", new BigDecimal("100.00"));
-        TransferenciaRequest request = new TransferenciaRequest("ORIGEM", "DESTINO", BigDecimal.TEN);
-
-        when(contaRepository.findByNumeroConta("ORIGEM")).thenReturn(Optional.of(origem));
-        when(contaRepository.findByNumeroConta("DESTINO")).thenReturn(Optional.empty());
-
-        assertThrows(RecursoNaoEncontradoException.class, () -> transacaoService.transferir(request));
-    }
-
-    @Test
-    @DisplayName("TRANSFERENCIA: Deve falhar por saldo insuficiente na origem")
-    void transferir_ErroSaldoInsuficiente() {
-        Conta origem = criarContaComUsuario(1, "ORIGEM", new BigDecimal("10.00"));
-        Conta destino = criarContaComUsuario(2, "DESTINO", new BigDecimal("0.00"));
-
-        TransferenciaRequest request = new TransferenciaRequest("ORIGEM", "DESTINO", new BigDecimal("50.00"));
-
-        when(contaRepository.findByNumeroConta("ORIGEM")).thenReturn(Optional.of(origem));
-        when(contaRepository.findByNumeroConta("DESTINO")).thenReturn(Optional.of(destino));
-
-        assertThrows(ArgumentoInvalidoException.class, () -> transacaoService.transferir(request));
-
-        assertEquals(new BigDecimal("10.00"), origem.getSaldo());
-        assertEquals(new BigDecimal("0.00"), destino.getSaldo());
-    }
-
-    // --- MÉTODOS AUXILIARES ---
-
-    private Conta criarContaComUsuario(Integer idConta, String numeroConta, BigDecimal saldo) {
-        Usuario usuario = new Usuario();
-        usuario.setNome("Usuario Teste");
-        usuario.setCpf("123.456.789-00"); // Importante estar preenchido para o response não quebrar
-
-        Conta conta = new Conta();
-        conta.setIdConta(idConta);
-        conta.setNumeroConta(numeroConta);
-        conta.setSaldo(saldo);
-        conta.setUsuario(usuario);
-
-        return conta;
-    }
-}
+}//

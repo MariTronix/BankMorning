@@ -12,12 +12,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class UsuarioTest {
 
     @Test
-    @DisplayName("getUsername deve retornar o CPF")
-    void getUsername_DeveRetornarCpf() {
+    @DisplayName("getUsername deve retornar o email")
+    void getUsername_DeveRetornarEmail() {
         Usuario usuario = new Usuario();
-        usuario.setCpf("123.456.789-00");
+        usuario.setEmail("alberto321@gmail.com");
 //
-        assertEquals("123.456.789-00", usuario.getUsername());
+        assertEquals("alberto321@gmail.com", usuario.getUsername());
     }
 
     @Test

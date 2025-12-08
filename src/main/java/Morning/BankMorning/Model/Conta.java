@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Table(name = "conta")
-
 public class Conta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +28,7 @@ public class Conta {
     private String numeroConta;
 
     @Column(nullable = false)
-    private BigDecimal saldo;
+    private BigDecimal saldo = BigDecimal.ZERO;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;

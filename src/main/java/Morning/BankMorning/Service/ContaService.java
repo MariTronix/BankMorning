@@ -11,6 +11,7 @@ import Morning.BankMorning.Repository.ContaRepository;
 import Morning.BankMorning.Repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,8 @@ public class ContaService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private static UsuarioService usuarioService;
+    @Lazy
+    private  UsuarioService usuarioService;
 
     @Autowired
     private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();

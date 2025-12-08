@@ -1,22 +1,23 @@
 package Morning.BankMorning.Controller;
 
 import Morning.BankMorning.Dto.*;
+import Morning.BankMorning.Exception.ArgumentoInvalidoException;
 import Morning.BankMorning.Model.Usuario;
-import Morning.BankMorning.Repository.UsuarioRepository;
-import Morning.BankMorning.Service.ContaService;
 import Morning.BankMorning.Service.TokenService;
 import Morning.BankMorning.Service.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
@@ -26,11 +27,6 @@ public class AuthController {
     private UsuarioService usuarioService;
 
     @Autowired
-    private ContaService contaService;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private TokenService tokenService;
 
     @Autowired
@@ -38,26 +34,52 @@ public class AuthController {
 
     @PostMapping("/cadastro")
     public ResponseEntity<UsuarioResponse> cadastro(@RequestBody @Valid CadastroRequest cadastroRequest) {
-
+        // Não precisa de try-catch aqui, o ExceptionHandler abaixo resolve
         UsuarioResponse response = usuarioService.cadastrarNovoUsuarioeConta(cadastroRequest);
-
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody LoginRequest body) {
-
-        var authenticationToke = new UsernamePasswordAuthenticationToken(
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest body) {
+        var authenticationToken = new UsernamePasswordAuthenticationToken(
                 body.login(),
                 body.senha()
         );
 
-        Authentication authentication = authenticationManager.authenticate(authenticationToke);
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
         Usuario usuario = (Usuario) authentication.getPrincipal();
-
         String token = tokenService.gerarToken(usuario.getConta());
 
         return ResponseEntity.ok(new LoginResponse(token));
+    }
+
+    // --- TRATAMENTO DE ERROS LOCAL (Sem classe Global) ---
+
+    // Captura erros de validação (@Valid) -> Retorna 400
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+                errors.put(error.getField(), error.getDefaultMessage()));
+        return ResponseEntity.badRequest().body(errors);
+    }
+
+    // Captura Regras de Negócio (ex: CPF duplicado) -> Retorna 400
+    @ExceptionHandler(ArgumentoInvalidoException.class)
+    public ResponseEntity<String> handleArgumentoInvalido(ArgumentoInvalidoException ex) {
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
+
+    // Captura Senha Incorreta -> Retorna 401
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<String> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
+    }
+
+    // Captura Erros Gerais -> Retorna 500
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleGenericException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: " + ex.getMessage());
     }
 }

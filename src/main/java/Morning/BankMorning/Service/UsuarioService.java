@@ -9,9 +9,7 @@ import Morning.BankMorning.Exception.ArgumentoInvalidoException;
 import Morning.BankMorning.Exception.RecursoNaoEncontradoException;
 import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Repository.UsuarioRepository;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,27 +20,23 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private ContaService contaService;
 
-    private static Usuario converterParaModel(UsuarioRequest usuarioRequest) {
-        if (usuarioRequest == null) {
-            return null;
-        }
-        Usuario usuario = new Usuario();
-        BeanUtils.copyProperties(usuarioRequest, usuario);
-
-        return usuario;
-    }
-
-    public static UsuarioResponse converterParaResponse(Usuario usuario) {
+    /**
+     * Converte Model para DTO de Resposta.
+     * REMOVIDO "static" para permitir que o Mockito funcione corretamente nos testes.
+     */
+    public UsuarioResponse converterParaResponse(Usuario usuario) {
         if (usuario == null) {
             return null;
         }
 
-        return new UsuarioResponse(usuario.getNome(), usuario.getEmail(), usuario.getCpf());
+        // A ordem deve respeitar o Record: (Nome, CPF, Email)
+        return new UsuarioResponse(
+                usuario.getNome(),
+                usuario.getCpf(),
+                usuario.getEmail()
+        );
     }
 
     @Transactional
@@ -65,8 +59,10 @@ public class UsuarioService {
 
         Usuario usuarioCadastrado = usuarioRepository.save(usuarioSendoCadastrado);
 
+        // Cria o request de conta com a senha crua (o ContaService criptografará)
         ContaRequest contaRequest = new ContaRequest(request.senha(), usuarioCadastrado);
 
+        // Chama o serviço de conta para criar a conta vinculada
         contaService.criarConta(usuarioCadastrado, contaRequest);
 
         return converterParaResponse(usuarioCadastrado);
@@ -75,16 +71,16 @@ public class UsuarioService {
     @Transactional
     public UsuarioResponse atualizarUsuario(Integer id, UsuarioRequest usuarioRequest) {
 
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado com ID: " + id));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado com ID: " + id));
 
+        // Validação de Email único na atualização
         if (usuarioRequest.email() != null && !usuarioRequest.email().isEmpty()) {
-
             usuarioRepository.findByEmail(usuarioRequest.email()).ifPresent(usuarioEncontrado -> {
                 if (!usuarioEncontrado.getIdUsuario().equals(id)) {
                     throw new ArgumentoInvalidoException("Já existe um usuário com este Email: " + usuarioRequest.email());
                 }
             });
-
             usuario.setEmail(usuarioRequest.email());
         }
 
@@ -103,7 +99,8 @@ public class UsuarioService {
 
     @Transactional
     public UsuarioResponse deletarUsuario(Integer id) {
-        Usuario usuario = usuarioRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado."));
 
         usuarioRepository.delete(usuario);
 

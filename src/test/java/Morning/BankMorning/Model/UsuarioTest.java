@@ -16,7 +16,7 @@ class UsuarioTest {
     void getUsername_DeveRetornarCpf() {
         Usuario usuario = new Usuario();
         usuario.setCpf("123.456.789-00");
-
+//
         assertEquals("123.456.789-00", usuario.getUsername());
     }
 

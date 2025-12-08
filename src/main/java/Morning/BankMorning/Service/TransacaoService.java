@@ -22,7 +22,7 @@ public class TransacaoService {
 
     @Autowired
     private ContaRepository contaRepository;
-
+//
     @Autowired
     @Lazy // @Lazy resolve o ciclo de dependência se o ContaService também chamar o TransacaoService
     private ContaService contaService;

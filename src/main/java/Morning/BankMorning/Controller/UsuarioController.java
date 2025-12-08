@@ -16,7 +16,7 @@ public class UsuarioController {
     @Autowired
     private UsuarioService service;
 
-
+//
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponse> atualizar(@PathVariable Integer id, @RequestBody @Valid UsuarioRequest request) {
         UsuarioResponse response = service.atualizarUsuario(id, request);

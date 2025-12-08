@@ -23,7 +23,7 @@ public class Transacao {
 
     @Column(nullable = false)
     private LocalDateTime dataHora;
-
+//
     @ManyToOne
     @JoinColumn(name = "id_conta_origem")
     private Conta contaOrigem;

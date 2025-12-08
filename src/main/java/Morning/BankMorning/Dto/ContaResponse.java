@@ -6,3 +6,4 @@ import java.math.BigDecimal;
 
 public record ContaResponse(Integer idConta, String agencia, BigDecimal saldo, UsuarioResponse usuario) {
 }
+//

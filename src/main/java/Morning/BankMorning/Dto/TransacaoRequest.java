@@ -12,4 +12,4 @@ public record TransacaoRequest(
         String cpfContaDestino,
         @NotNull(message = "Valor é obrigatório") BigDecimal valor,
         @NotNull(message = "Tipo de Transação é obrigatório") TipoDeTransacao tipoDeTransacao) {
-}
+}//

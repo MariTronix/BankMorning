@@ -12,4 +12,4 @@ public record CadastroRequest(@NotBlank(message = "O nome é obrigatório") Stri
                               @NotBlank(message = "O Email é obrigatório") @Email(message = "Email Inválido") String email,
                               @NotNull(message = "A data de nascimento é obrigatória") LocalDate data_nascimento,
                               @NotBlank(message = "A senha é obrigatória") String senha) {
-}
+}//

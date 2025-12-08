@@ -21,7 +21,7 @@ public class Usuario implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer idUsuario;
-
+//
     @Column(nullable = false, length = 100)
     private String nome;
 

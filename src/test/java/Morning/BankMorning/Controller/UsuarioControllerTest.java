@@ -30,7 +30,7 @@ class UsuarioControllerTest {
 
     @Autowired
     private MockMvc mockMvc; // Simula as requisições HTTP (O "Postman" do código)
-
+//
     @Autowired
     private UsuarioRepository usuarioRepository;
 

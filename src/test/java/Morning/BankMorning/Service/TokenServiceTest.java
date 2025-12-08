@@ -106,7 +106,7 @@ class TokenServiceTest {
 
         assertEquals("Erro interno ao validar Token.", exception.getMessage());
     }
-
+//
     @Test
     @DisplayName("Deve recuperar o Subject (CPF) do token corretamente")
     void getSubject_Sucesso() {

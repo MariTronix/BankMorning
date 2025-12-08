@@ -9,3 +9,4 @@ public interface ContaRepository extends JpaRepository<Conta, Integer> {
     Optional<Conta> findByUsuario_Email(String email);
     Optional<Conta> findByNumeroConta(String numeroConta);
 }
+//

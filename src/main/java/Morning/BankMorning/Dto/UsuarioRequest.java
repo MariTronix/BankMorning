@@ -8,4 +8,4 @@ public record UsuarioRequest(
         String nome,
         @Email(message = "Email Inválido") String email,
         LocalDate data_nascimento) {
-}
+}//

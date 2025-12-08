@@ -35,7 +35,7 @@ public class AuthController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
-
+//
     @PostMapping("/cadastro")
     public ResponseEntity<UsuarioResponse> cadastro(@RequestBody @Valid CadastroRequest cadastroRequest) {
 

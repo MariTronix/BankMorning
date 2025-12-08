@@ -1,7 +1,9 @@
 package Morning.BankMorning.Exception;
 
+import Morning.BankMorning.Dto.MensagemErro;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -60,6 +62,22 @@ public class GerenciadorExcecoesGlobal {
         RespostaErro erro = new RespostaErro(mensagem, status.value(), LocalDateTime.now().toString());
 
         return new ResponseEntity<RespostaErro>(erro, status);
+    }
+    // Trata erro de validação (@Valid) -> Retorna 400
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        // Pega a primeira mensagem de erro disponível
+        String erro = ex.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+
+        // Retorne sua estrutura de erro padrão (ajuste conforme sua classe de erro)
+        // Exemplo:
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MensagemErro(erro, 400));
+    }
+
+    // Trata erro de Login (BadCredentials) -> Retorna 403 ou 401
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<Object> handleBadCredentials(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new MensagemErro("Credenciais inválidas", 403));
     }
 
 }

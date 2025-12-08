@@ -1,0 +1,265 @@
+/* ========================================= */
+/* 1. CONFIGURAÇÕES GERAIS E VARIÁVEIS       */
+/* ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --primary-orange: #FF6600; 
+    --secondary-blue: #1E3A5F; 
+    --light-background: #F7F9FC; 
+    --text-color: #333; 
+    --error-red: #EF4444; 
+    --border-color: #e0e0e0; 
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--light-background); 
+    min-height: 100vh; 
+    color: var(--text-color);
+    overflow: hidden; /* Evita scroll na página principal (o scroll será interno no formulário) */
+}
+
+/* ========================================= */
+/* 2. LAYOUT SPLIT (DIVISÃO DA TELA)         */
+/* ========================================= */
+.register-split-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* --- LADO ESQUERDO: VISUAL (Imagem + Overlay) --- */
+.visual-area-cadastro {
+    flex: 3; /* Ocupa 60% da tela */
+    /* Certifique-se que o caminho da imagem está correto */
+    background-image: url('../assets/cadastro.jpg'); 
+    background-size: cover; 
+    background-position: center; 
+    position: relative; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    z-index: 1; 
+}
+
+/* O Overlay Laranja/Azul (Igual ao Login) */
+.visual-area-cadastro::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Degradê idêntico ao login para consistência visual */
+    background: linear-gradient(135deg, rgba(255, 102, 0, 0.8), rgba(30, 58, 95, 0.7));
+    opacity: 0.9; 
+    z-index: 0;
+}
+
+.visual-content {
+    color: white;
+    text-align: center;
+    max-width: 500px;
+    z-index: 2; /* Fica acima do overlay */
+}
+
+.visual-logo-large {
+    max-width: 150px; 
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5)); 
+}
+
+.visual-content h1 {
+    font-size: 3.5rem; 
+    line-height: 1.1;
+    margin: 20px 0 10px;
+    font-weight: 700;
+}
+
+.visual-content p {
+    font-size: 1.2rem;
+    font-weight: 300;
+}
+
+/* --- LADO DIREITO: ÁREA DO FORMULÁRIO --- */
+.form-area {
+    flex: 2; /* Ocupa 40% da tela */
+    background-color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+}
+
+/* ========================================= */
+/* 3. CAIXA DE CADASTRO (BOX)                */
+/* ========================================= */
+.register-box {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: none; 
+    width: 100%;
+    max-width: 400px; /* Um pouco mais largo que o login para acomodar nomes longos */
+    text-align: center;
+    
+    /* TRUQUE PARA CADASTRO: Scroll se o form for muito grande */
+    max-height: 95vh;
+    overflow-y: auto;
+    
+    /* Esconder barra de rolagem (opcional, estética) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--secondary-blue) transparent;
+}
+
+.register-logo-small {
+    max-width: 80px; 
+    margin-bottom: 15px;
+}
+
+.register-title {
+    color: var(--secondary-blue);
+    font-size: 26px; 
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+.register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espaçamento levemente menor que login para caber mais campos */
+}
+
+/* ========================================= */
+/* 4. INPUTS E BOTÕES (IGUAIS AO LOGIN)      */
+/* ========================================= */
+.form-group {
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--secondary-blue);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 15px; /* Padding confortável */
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-input:focus {
+    border-color: var(--primary-orange); 
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2); 
+}
+
+.register-button {
+    background-color: var(--primary-orange);
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 10px;
+}
+
+.register-button:hover {
+    background-color: #e65c00; 
+    transform: translateY(-2px); 
+}
+
+/* Link para voltar ao Login */
+.login-link {
+    margin-top: 20px;
+    font-size: 15px;
+}
+
+.login-link button {
+    color: var(--primary-orange);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 5px;
+    font-size: 15px;
+}
+
+.login-link button:hover {
+    color: var(--secondary-blue);
+    text-decoration: underline;
+}
+
+/* ========================================= */
+/* 5. RESPONSIVIDADE (MOBILE)                */
+/* ========================================= */
+
+@media (max-width: 768px) {
+    /* Esconde a imagem lateral no mobile */
+    .visual-area-cadastro {
+        display: none;
+    }
+    
+    /* Formulário ocupa fundo cinza claro */
+    .form-area {
+        flex: 1;
+        background-color: var(--light-background);
+        padding: 20px;
+        align-items: center; /* Centraliza verticalmente */
+    }
+    
+    /* Cria o efeito de CARD flutuante no mobile */
+    .register-box {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 30px 25px;
+        max-height: none; /* Remove limite de altura no mobile */
+        overflow-y: visible;
+    }
+
+    .register-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .register-logo-small {
+        max-width: 70px;
+        margin-bottom: 15px;
+    }
+
+    .register-button {
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+}
+
+/* Mobile muito pequeno (iPhone SE, etc) */
+@media (max-width: 400px) {
+    .register-box {
+        padding: 25px 20px;
+    }
+
+    .register-title {
+        font-size: 20px;
+    }
+
+    .form-input {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+}

@@ -12,14 +12,12 @@ import Morning.BankMorning.Repository.UsuarioRepository;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Random;
-
 
 @Service
 public class ContaService {
@@ -31,11 +29,11 @@ public class ContaService {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    @Lazy
-    private  UsuarioService usuarioService;
+    @Lazy // Essencial para evitar Ciclo de Dependência com UsuarioService
+    private UsuarioService usuarioService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private PasswordEncoder passwordEncoder; // Injetado pelo Spring (não use 'new' aqui)
 
     public Conta converterParaModel(ContaRequest request) {
         if (request == null) {
@@ -43,42 +41,66 @@ public class ContaService {
         }
         Conta conta = new Conta();
         BeanUtils.copyProperties(request, conta);
-
         return conta;
     }
 
-    public   ContaResponse converterParaResponse(Conta conta) {
+    public ContaResponse converterParaResponse(Conta conta) {
         if (conta == null) {
             return null;
         }
 
-        UsuarioResponse usuarioResponse = usuarioService.converterParaResponse(conta.getUsuario());
+        // Converte o usuário (se existir) usando o serviço lazy
+        UsuarioResponse usuarioResponse = conta.getUsuario() != null
+                ? usuarioService.converterParaResponse(conta.getUsuario())
+                : null;
 
-        return new ContaResponse(conta.getIdConta(), conta.getAgencia(), conta.getSaldo(), usuarioResponse);
+        return new ContaResponse(
+                conta.getIdConta(),
+                conta.getAgencia(),
+                conta.getSaldo(),
+                conta.getNumeroConta(), // Adicionado para bater com seu DTO
+                usuarioResponse
+        );
     }
+
+    // --- MÉTODOS DE BUSCA ---
 
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorId(Integer id) {
-        Conta conta = contaRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
-
+        Conta conta = contaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
         return converterParaResponse(conta);
     }
 
     @Transactional(readOnly = true)
+    public BigDecimal buscarSaldoPorCpf(String identificador) {
+        Conta conta = contaRepository.findByUsuario_Email(identificador)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada para o usuário logado."));
+        return conta.getSaldo();
+    }
+
+    @Transactional(readOnly = true)
     public ContaResponse buscarContaPorCpfUsuario(String cpf) {
-
-        Conta conta = contaRepository.findByUsuario_Cpf(cpf).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
-
+        Conta conta = contaRepository.findByUsuario_Cpf(cpf)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
         return converterParaResponse(conta);
     }
 
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorEmailUsuario(String email) {
-
-        Conta conta = contaRepository.findByUsuario_Email(email).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
-
+        Conta conta = contaRepository.findByUsuario_Email(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
         return converterParaResponse(conta);
     }
+
+    // Método auxiliar usado pelo TransacaoService
+    @Transactional(readOnly = true)
+    public Conta buscarContaModelPorEmailUsuario(String email) {
+        return contaRepository.findByUsuario_Email(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada para o usuário logado."));
+    }
+
+    // --- CRIAÇÃO DE CONTA ---
 
     @Transactional
     public ContaResponse criarConta(Usuario usuario, ContaRequest contaRequest) {
@@ -87,7 +109,10 @@ public class ContaService {
         }
 
         Conta conta = new Conta();
+        
+        // CORREÇÃO DE SEGURANÇA: Criptografar a senha antes de salvar
         conta.setSenha(passwordEncoder.encode(contaRequest.senha()));
+        
         conta.setUsuario(usuario);
         conta.setSaldo(BigDecimal.ZERO);
         conta.setAgencia("777");

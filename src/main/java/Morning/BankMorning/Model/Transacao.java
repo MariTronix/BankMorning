@@ -19,6 +19,7 @@ public class Transacao {
     private BigDecimal valor;
 
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private TipoDeTransacao tipo;
 
     @Column(nullable = false)

@@ -24,19 +24,31 @@ public class UsuarioService {
 
     /**
      * Converte Model para DTO de Resposta.
-     * REMOVIDO "static" para permitir que o Mockito funcione corretamente nos testes.
+     * Ordem dos parâmetros ajustada para o Record (Nome, CPF, Email).
      */
     public UsuarioResponse converterParaResponse(Usuario usuario) {
         if (usuario == null) {
             return null;
         }
 
-        // A ordem deve respeitar o Record: (Nome, CPF, Email)
+        // Se o Record for (nome, cpf, email):
         return new UsuarioResponse(
                 usuario.getNome(),
-                usuario.getCpf(),
+                usuario.getCpf(), 
                 usuario.getEmail()
         );
+    }
+
+    /**
+     * Busca um usuário pelo e-mail e converte para DTO.
+     * Usado pelo UsuarioController para exibir o perfil.
+     */
+    @Transactional(readOnly = true)
+    public UsuarioResponse buscarPerfilPorEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado para o email: " + email));
+
+        return converterParaResponse(usuario);
     }
 
     @Transactional
@@ -54,15 +66,14 @@ public class UsuarioService {
         usuarioSendoCadastrado.setCpf(request.cpf());
         usuarioSendoCadastrado.setEmail(request.email());
         usuarioSendoCadastrado.setNome(request.nome());
-        usuarioSendoCadastrado.setDataNascimento(request.data_nascimento());
+        usuarioSendoCadastrado.setDataNascimento(request.dataNascimento());
         usuarioSendoCadastrado.setRole(Role.ROLE_USUARIO);
 
         Usuario usuarioCadastrado = usuarioRepository.save(usuarioSendoCadastrado);
 
-        // Cria o request de conta com a senha crua (o ContaService criptografará)
+        // Envia a senha CRUA. O ContaService criptografará.
         ContaRequest contaRequest = new ContaRequest(request.senha(), usuarioCadastrado);
 
-        // Chama o serviço de conta para criar a conta vinculada
         contaService.criarConta(usuarioCadastrado, contaRequest);
 
         return converterParaResponse(usuarioCadastrado);
@@ -74,7 +85,6 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado com ID: " + id));
 
-        // Validação de Email único na atualização
         if (usuarioRequest.email() != null && !usuarioRequest.email().isEmpty()) {
             usuarioRepository.findByEmail(usuarioRequest.email()).ifPresent(usuarioEncontrado -> {
                 if (!usuarioEncontrado.getIdUsuario().equals(id)) {

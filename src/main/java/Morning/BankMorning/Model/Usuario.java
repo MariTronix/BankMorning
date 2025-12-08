@@ -48,11 +48,33 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getPassword() {
-        return conta != null ? conta.getSenha() : null;
+        return this.conta != null ? this.conta.getSenha() : null;
     }
 
     @Override
     public String getUsername() {
-        return cpf;
+        // CORREÇÃO FINAL: O front-end envia o e-mail, então o Spring deve buscar pelo e-mail.
+        return email;
+    }
+
+    // Métodos adicionais de UserDetails (mantidos no padrão Spring Security)
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

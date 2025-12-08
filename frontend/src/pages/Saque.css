@@ -1,0 +1,195 @@
+/* Importar fonte */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Variáveis de cores (mesmas do Home.css) */
+:root {
+    --primary-orange: #FF6600;
+    --secondary-blue: #1E3A5F;
+    --light-background: #F7F9FC;
+    --text-color: #333;
+    --credit-green: #10B981;
+    --debit-red: #EF4444;
+    --border-color: #e0e0e0;
+    --sidebar-width: 250px;
+}
+
+/* ------------------------------------------- */
+/* CONTAINER PRINCIPAL COM SIDEBAR             */
+/* ------------------------------------------- */
+
+.saque-container {
+    display: flex;
+    width: 100vw;
+    min-height: 100vh;
+    background-color: var(--light-background);
+}
+
+/* ------------------------------------------- */
+/* CONTEÚDO CENTRALIZADO                       */
+/* ------------------------------------------- */
+
+.saque-content {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    margin-left: var(--sidebar-width);
+}
+
+/* ------------------------------------------- */
+/* CAIXA DO FORMULÁRIO (CARD)                  */
+/* ------------------------------------------- */
+
+.saque-box {
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 450px;
+    text-align: center;
+}
+
+.saque-box h2 {
+    color: var(--secondary-blue);
+    font-size: 1.8rem;
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+/* ------------------------------------------- */
+/* FORMULÁRIO                                  */
+/* ------------------------------------------- */
+
+.saque-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.form-group-saque {
+    text-align: left;
+}
+
+.form-group-saque label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+/* Inputs */
+.saque-box input,
+.form-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.saque-box input:focus,
+.form-input:focus {
+    border-color: var(--primary-orange);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
+}
+
+/* ------------------------------------------- */
+/* BOTÕES                                      */
+/* ------------------------------------------- */
+
+/* Botão de Confirmação */
+.confirm-saque-button {
+    background-color: var(--primary-orange);
+    color: white;
+    padding: 14px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 10px;
+    font-family: 'Inter', sans-serif;
+}
+
+.confirm-saque-button:hover {
+    background-color: #e65c00;
+    transform: translateY(-2px);
+}
+
+/* Botão Voltar */
+.back-button {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--secondary-blue);
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 100%;
+    transition: background-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+}
+
+.back-button:hover {
+    background-color: var(--light-background);
+}
+
+/* ------------------------------------------- */
+/* MENSAGENS DE FEEDBACK                       */
+/* ------------------------------------------- */
+
+.message-error {
+    color: var(--debit-red);
+    background-color: rgba(239, 68, 68, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.message-success {
+    color: var(--credit-green);
+    background-color: rgba(16, 185, 129, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+/* ------------------------------------------- */
+/* RESPONSIVO - MOBILE                         */
+/* ------------------------------------------- */
+
+@media (max-width: 900px) {
+    .saque-container {
+        flex-direction: column;
+    }
+
+    .saque-content {
+        margin-left: 0;
+        padding: 20px;
+        min-height: calc(100vh - 80px);
+    }
+
+    .saque-box {
+        padding: 30px 25px;
+        max-width: 100%;
+    }
+
+    .saque-box h2 {
+        font-size: 1.5rem;
+    }
+
+    .confirm-saque-button {
+        font-size: 16px;
+    }
+}

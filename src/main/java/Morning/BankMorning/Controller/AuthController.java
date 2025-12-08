@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/auth") // Mantendo compatibilidade com seus testes
 public class AuthController {
 
     @Autowired
@@ -34,13 +34,15 @@ public class AuthController {
 
     @PostMapping("/cadastro")
     public ResponseEntity<UsuarioResponse> cadastro(@RequestBody @Valid CadastroRequest cadastroRequest) {
-        // Não precisa de try-catch aqui, o ExceptionHandler abaixo resolve
+        // Não precisa de try-catch aqui, o @ExceptionHandler cuida disso
         UsuarioResponse response = usuarioService.cadastrarNovoUsuarioeConta(cadastroRequest);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest body) {
+        // O authenticationManager lança BadCredentialsException se a senha for errada
+        // Essa exceção será capturada pelo @ExceptionHandler(BadCredentialsException.class) lá embaixo
         var authenticationToken = new UsernamePasswordAuthenticationToken(
                 body.login(),
                 body.senha()
@@ -54,9 +56,9 @@ public class AuthController {
         return ResponseEntity.ok(new LoginResponse(token));
     }
 
-    // --- TRATAMENTO DE ERROS LOCAL (Sem classe Global) ---
+    // --- TRATAMENTO DE ERROS LOCAL ---
 
-    // Captura erros de validação (@Valid) -> Retorna 400
+    // 1. Captura erros de validação (@Valid) -> Retorna 400
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -65,19 +67,19 @@ public class AuthController {
         return ResponseEntity.badRequest().body(errors);
     }
 
-    // Captura Regras de Negócio (ex: CPF duplicado) -> Retorna 400
+    // 2. Captura Regras de Negócio (ex: CPF duplicado) -> Retorna 400
     @ExceptionHandler(ArgumentoInvalidoException.class)
     public ResponseEntity<String> handleArgumentoInvalido(ArgumentoInvalidoException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
 
-    // Captura Senha Incorreta -> Retorna 401
+    // 3. Captura Senha Incorreta -> Retorna 401
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<String> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciais inválidas");
     }
 
-    // Captura Erros Gerais -> Retorna 500
+    // 4. Captura Erros Gerais -> Retorna 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGenericException(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro interno: " + ex.getMessage());

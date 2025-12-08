@@ -1,33 +1,57 @@
-HELP.md
+# --- JAVA & MAVEN (Backend) ---
 target/
-.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+*.class
+*.log
+*.jar
+*.war
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
+# --- IDEs (Configurações locais que não sobem) ---
 .idea
 *.iws
 *.iml
 *.ipr
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
-
-### VS Code ###
 .vscode/
+.settings/
+.classpath
+.project
+.factorypath
+.springBeans
+.sts4-cache
+bin/
+
+# --- FRONTEND (Node.js / React) ---
+node_modules/
+**/node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+frontend/.env.local
+package-lock.json
+yarn.lock
+
+# --- PYTHON & SELENIUM (Testes) ---
+# Ignora o ambiente virtual (venv) onde quer que ele esteja
+venv/
+**/venv/
+env/
+.env
+
+# Ignora arquivos compilados do Python
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# --- EVIDÊNCIAS DE TESTE (Lixo gerado pelos testes) ---
+*.png
+**/test/*.png
+relatorios/
+reports/
+screenshots/
+
+# --- SISTEMA OPERACIONAL ---
+.DS_Store
+Thumbs.db

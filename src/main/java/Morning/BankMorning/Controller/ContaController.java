@@ -18,23 +18,33 @@ public class ContaController {
     @Autowired
     private ContaService contaService;
 
-    public record BalanceResponse(BigDecimal balance) {}
+    // Usando o mesmo record para clareza no endpoint de saldo
+    public record BalanceResponse(BigDecimal saldo) {}
 
     // Rota: GET /api/account/balance
     @GetMapping("/balance")
     public ResponseEntity<BalanceResponse> getBalance(Principal principal) {
 
-        String cpf = principal.getName(); // Obtém o CPF (username) do JWT
+        // Obtém o identificador (E-mail ou CPF) do JWT
+        String identificador = principal.getName();
 
-        BigDecimal saldo = contaService.buscarSaldoPorCpf(cpf);
+        // Chamamos o serviço que busca o saldo pelo identificador.
+        // Este método no Service já deve ter o @Transactional(readOnly = true).
+        BigDecimal saldo = contaService.buscarSaldoPorCpf(identificador);
 
         return ResponseEntity.ok(new BalanceResponse(saldo));
     }
 
     @GetMapping("/detalhes") // Rota completa: /api/account/detalhes
     public ResponseEntity<ContaResponse> buscarDetalhes(Principal principal) {
-        String email = principal.getName();
-        ContaResponse response = contaService.buscarContaPorEmailUsuario(email);
+
+        // Obtém o identificador (E-mail ou CPF) do JWT
+        String identificador = principal.getName();
+
+        // Esta chamada utiliza o ContaService que, com o @Transactional(readOnly = true),
+        // resolve o Lazy Loading para carregar o nome do usuário.
+        ContaResponse response = contaService.buscarContaPorEmailUsuario(identificador);
+
         return ResponseEntity.ok(response);
     }
 }

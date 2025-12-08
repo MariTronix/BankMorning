@@ -39,7 +39,7 @@ public class TransacaoService {
         String cpfContaOrigem = null;
         String cpfContaDestino = null;
 
-        // Garante a checagem de NULL para evitar erro 500 no Extrato
+        // Acessos a getUsuario() são seguros se este método for chamado dentro de um contexto @Transactional(readOnly = true)
         if (transacao.getContaOrigem() != null && transacao.getContaOrigem().getUsuario() != null) {
             cpfContaOrigem = transacao.getContaOrigem().getUsuario().getCpf();
         }
@@ -54,43 +54,29 @@ public class TransacaoService {
     // --- DEPÓSITO ---
     @Transactional
     public TransacaoResponse depositar(Conta contaOrigem, DepositoRequest request) {
-
         if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor do depósito deve ser maior que zero.");
         }
-
-        // 1. Buscar conta de destino pelo número
         Conta contaDestino = contaRepository.findByNumeroConta(request.numeroContaDestino())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta de destino não encontrada."));
-
-        // 2. Lógica
         BigDecimal novoSaldo = contaDestino.getSaldo().add(request.valor());
         contaDestino.setSaldo(novoSaldo);
         contaRepository.save(contaDestino);
-
-        // 3. Salvar Histórico (Origem nula = dinheiro externo)
         return salvarTransacaoGen(request.valor(), TipoDeTransacao.DEPOSITO, null, contaDestino);
     }
 
     // --- SAQUE ---
     @Transactional
     public TransacaoResponse sacar(Conta contaOrigem, SaqueRequest request) {
-
         if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor do saque deve ser positivo.");
         }
-
-        // 1. Verificar Saldo
         if (contaOrigem.getSaldo().compareTo(request.valor()) < 0) {
             throw new ArgumentoInvalidoException("Saldo insuficiente.");
         }
-
-        // 2. Retirar o dinheiro
         BigDecimal novoSaldo = contaOrigem.getSaldo().subtract(request.valor());
         contaOrigem.setSaldo(novoSaldo);
         contaRepository.save(contaOrigem);
-
-        // 3. Salvar Histórico (Destino nulo = dinheiro saindo)
         return salvarTransacaoGen(request.valor(), TipoDeTransacao.SAQUE, contaOrigem, null);
     }
 
@@ -98,42 +84,38 @@ public class TransacaoService {
     // --- TRANSFERÊNCIA ---
     @Transactional
     public TransacaoResponse transferir(Conta contaOrigem, TransferenciaRequest request) {
-
         if (request.valor().compareTo(BigDecimal.ZERO) <= 0) {
             throw new ArgumentoInvalidoException("O valor da transferência deve ser positivo.");
         }
-
-        // 1. Buscar Conta DESTINO pelo NÚMERO
         Conta contaDestino = contaRepository.findByNumeroConta(request.numeroContaDestino())
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta de destino não encontrada."));
-
-        // 2. Validar Saldo e Mesma Conta
         BigDecimal valor = request.valor();
         if (contaOrigem.getSaldo().compareTo(valor) < 0) {
             throw new ArgumentoInvalidoException("Saldo insuficiente.");
         }
-
         if (contaOrigem.equals(contaDestino)) {
             throw new ArgumentoInvalidoException("Não é possível transferir para a mesma conta.");
         }
-
-        // 3. Atualizar saldos
         contaOrigem.setSaldo(contaOrigem.getSaldo().subtract(valor));
         contaRepository.save(contaOrigem);
-
         contaDestino.setSaldo(contaDestino.getSaldo().add(valor));
         contaRepository.save(contaDestino);
-
-        // 4. Salvar
         return salvarTransacaoGen(valor, TipoDeTransacao.TRANSFERENCIA, contaOrigem, contaDestino);
     }
 
     // --- EXTRATO (Lógica de leitura) ---
+    /**
+     * CORREÇÃO: Usando @Transactional(readOnly = true) para garantir que o acesso
+     * às entidades LAZY (como o Usuario) no método converterParaResponse funcione,
+     * prevenindo o erro 500 Internal Server Error.
+     */
+    @Transactional(readOnly = true)
     public List<TransacaoResponse> listarExtrato(Conta contaDoUsuario) {
         // Busca todas as transações onde a contaDoUsuario é a origem OU o destino
-        List<Transacao> transacoes = transacaoRepository.findAllByContaOrigemOrContaDestinoOrderByDataHoraDesc(contaDoUsuario, contaDoUsuario);
+        // Esta chamada retorna entidades LAZY.
+        List<Transacao> transacoes = transacaoRepository.findAllByContaOrigemOrContaDestinoOrderByDataHoraDesc(contaDoUsuario);
 
-        // Transforma a lista de Transacao (Banco) em TransacaoResponse (DTO)
+        // O mapeamento ocorre DENTRO da transação, garantindo que o Lazy Loading seja resolvido.
         return transacoes.stream()
                 .map(this::converterParaResponse)
                 .collect(Collectors.toList());

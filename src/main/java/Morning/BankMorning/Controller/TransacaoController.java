@@ -5,14 +5,14 @@ import Morning.BankMorning.Dto.SaqueRequest;
 import Morning.BankMorning.Dto.TransferenciaRequest;
 import Morning.BankMorning.Dto.TransacaoResponse;
 import Morning.BankMorning.Model.Conta;
-import Morning.BankMorning.Model.Usuario;
 import Morning.BankMorning.Service.TransacaoService;
+import Morning.BankMorning.Service.ContaService; // Importação necessária
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
 
 import java.util.List;
 
@@ -23,56 +23,55 @@ public class TransacaoController {
     @Autowired
     private TransacaoService transacaoService;
 
-    // MÉTODO AUXILIAR (DEVE ESTAR NO CONTROLLER!)
-    private Conta getContaDoUsuario(Authentication authentication) {
-        // Assume que o principal é o objeto Usuario que tem o campo Conta
-        Usuario usuarioLogado = (Usuario) authentication.getPrincipal();
-        return usuarioLogado.getConta();
+    @Autowired
+    private ContaService contaService; // Injetado para buscar a Conta completa
+
+    // MÉTODO AUXILIAR CORRIGIDO: Busca a Conta usando o identificador do Principal
+    private Conta getContaDoUsuario(Principal principal) {
+        String identificador = principal.getName();
+
+        // CHAMA O NOVO MÉTODO no Service. Retorna a Conta ATTACHED.
+        Conta conta = contaService.buscarContaModelPorEmailUsuario(identificador);
+        return conta;
     }
 
 
     @PostMapping("/depositar")
     public ResponseEntity<TransacaoResponse> depositar(
-            Authentication authentication,
+            Principal principal,
             @RequestBody @Valid DepositoRequest request) {
 
-        Conta contaOrigem = getContaDoUsuario(authentication);
+        Conta contaOrigem = getContaDoUsuario(principal);
         TransacaoResponse response = transacaoService.depositar(contaOrigem, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ------------------------------------------------------------------
-    // CORREÇÃO: ADICIONANDO SAQUE E TRANSFERÊNCIA
-    // ------------------------------------------------------------------
-
     @PostMapping("/sacar")
     public ResponseEntity<TransacaoResponse> sacar(
-            Authentication authentication,
+            Principal principal,
             @RequestBody @Valid SaqueRequest request) {
 
-        Conta contaOrigem = getContaDoUsuario(authentication);
+        Conta contaOrigem = getContaDoUsuario(principal);
         TransacaoResponse response = transacaoService.sacar(contaOrigem, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/transferir") // <--- MÉTODO QUE ESTAVA FALTANDO!
+    @PostMapping("/transferir")
     public ResponseEntity<TransacaoResponse> transferir(
-            Authentication authentication,
+            Principal principal,
             @RequestBody @Valid TransferenciaRequest request){
 
-        Conta contaOrigem = getContaDoUsuario(authentication);
+        Conta contaOrigem = getContaDoUsuario(principal);
         TransacaoResponse response = transacaoService.transferir(contaOrigem, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // ------------------------------------------------------------------
-
     @GetMapping("/extrato")
-    public ResponseEntity<List<TransacaoResponse>> verExtrato(Authentication authentication) {
-        // Usa o método auxiliar
-        Conta contaDoUsuario = getContaDoUsuario(authentication);
+    public ResponseEntity<List<TransacaoResponse>> verExtrato(Principal principal) {
+        // Usa o método auxiliar corrigido
+        Conta contaDoUsuario = getContaDoUsuario(principal);
 
-        // Chama o Service
+        // Chama o Service (que tem o @Transactional para resolver o extrato)
         List<TransacaoResponse> extrato = transacaoService.listarExtrato(contaDoUsuario);
 
         return ResponseEntity.ok(extrato);

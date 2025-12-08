@@ -1,134 +1,151 @@
-// frontend/src/pages/Transferencia.jsx
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { IoLogOutOutline, IoHomeOutline, IoListOutline } from 'react-icons/io5';
 import './Transacao.css';
+import BankMorningLogo from '../assets/bank_morning_logo.png';
 
-// URL base da sua API
 const API_URL = 'http://localhost:8080/api';
 
 function Transferencia() {
-    // Estados para os campos do formulário
-    const [numeroContaDestino, setNumeroContaDestino] = useState('');
-    const [valor, setValor] = useState('');
-    
-    // Estados para feedback do usuário
-    const [mensagem, setMensagem] = useState('');
-    const [sucesso, setSucesso] = useState(false);
-    
-    // Hook para navegação
-    const navigate = useNavigate();
+    const [numeroContaDestino, setNumeroContaDestino] = useState('');
+    const [valor, setValor] = useState('');
+    const [mensagem, setMensagem] = useState('');
+    const [sucesso, setSucesso] = useState(false);
+    const navigate = useNavigate();
 
-    // Função para lidar com o envio do formulário
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setMensagem('');
-        setSucesso(false);
+    const handleLogout = () => {
+        localStorage.removeItem('bankmorning_token');
+        navigate('/');
+    };
 
-        // 1. Obter o token
-        const token = localStorage.getItem('bankmorning_token');
-        if (!token) {
-            setMensagem('Erro: Usuário não autenticado.');
-            // Navegação imediata removida, a mensagem é mostrada primeiro
-            return;
-        }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setMensagem('');
+        setSucesso(false);
 
-        // 2. Validação básica (garante que os campos não estão vazios)
-        if (!numeroContaDestino || !valor) {
-            setMensagem('Erro: Preencha o número da conta de destino e o valor.');
-            return;
-        }
+        const token = localStorage.getItem('bankmorning_token');
+        if (!token) {
+            setMensagem('Erro: Usuário não autenticado.');
+            return;
+        }
 
-        // 3. Montar o DTO da requisição (deve bater com o TransferenciaRequest.java)
-        const transferenciaRequest = {
-            numeroContaDestino: numeroContaDestino,
-            valor: parseFloat(valor) // Converte o valor para número
-        };
+        if (!numeroContaDestino || !valor) {
+            setMensagem('Erro: Preencha o número da conta de destino e o valor.');
+            return;
+        }
 
-        try {
-            // 4. Chamar o endpoint de transferência
-            const response = await axios.post(`${API_URL}/transacoes/transferir`, transferenciaRequest, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            
-            // 5. Sucesso
-            setSucesso(true);
-            
-            // Mensagem de sucesso
-            setMensagem(`Transferência de ${parseFloat(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} realizada com sucesso!`);
+        const transferenciaRequest = {
+            numeroContaDestino: numeroContaDestino,
+            valor: parseFloat(valor)
+        };
 
-            // Limpar formulário e voltar após um pequeno delay
-            setNumeroContaDestino('');
-            setValor('');
+        try {
+            const response = await axios.post(`${API_URL}/transacoes/transferir`, transferenciaRequest, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            setSucesso(true);
+            setMensagem(`Transferência de ${parseFloat(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} realizada com sucesso!`);
+            setNumeroContaDestino('');
+            setValor('');
             setTimeout(() => navigate('/inicio'), 1500);
-            
-        } catch (error) {
-            // 6. Tratamento de Erro
-            console.error('Erro na transferência:', error);
-            
-            const erroMsg = error.response?.data?.message || 'Erro ao realizar a transferência. Verifique os dados.';
-            setMensagem(`Erro: ${erroMsg}`);
+            
+        } catch (error) {
+            console.error('Erro na transferência:', error);
+            const erroMsg = error.response?.data?.message || 'Erro ao realizar a transferência. Verifique os dados.';
+            setMensagem(`Erro: ${erroMsg}`);
 
-            // Se for 401, forçar o logout
-            if (error.response?.status === 401) {
-                localStorage.removeItem('bankmorning_token');
-                navigate('/');
-            }
-        }
-    };
+            if (error.response?.status === 401) {
+                localStorage.removeItem('bankmorning_token');
+                navigate('/');
+            }
+        }
+    };
 
-    return (
-        <div className="transferencia-container">
-            <div className="transferencia-box">
-                <h2>Transferência</h2>
-                
-                {/* Mensagem de Feedback */}
-                {mensagem && (
-                    <p className={mensagem.startsWith('Erro') ? 'message-error' : 'message-success'}>
-                        {mensagem}
-                    </p>
-                )}
+    return (
+        <div className="app-layout">
+            {/* SIDEBAR - Mesma do Home */}
+            <div className="sidebar">
+                <div className="sidebar-header">
+                    <img src={BankMorningLogo} alt="Logo" className="sidebar-logo" />
+                    <h1>Bank Morning</h1>
+                </div>
+                
+                <nav className="sidebar-nav-container">
+                    <nav className="sidebar-nav">
+                        <ul>
+                            <li>
+                                <Link to="/inicio">
+                                    <IoHomeOutline size={20} />
+                                    <span>Página Inicial</span>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/extrato">
+                                    <IoListOutline size={20} />
+                                    <span>Ver Extrato</span>
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
+                </nav>
+                
+                <button className="logout-button" onClick={handleLogout}>
+                    <IoLogOutOutline size={18} />
+                    <span className="logout-text">Sair da Conta</span>
+                </button>
+            </div>
 
-                <form onSubmit={handleSubmit} className="transferencia-form">
-                    
-                    {/* Campo Número da Conta Destino */}
-                    <div className="form-group-transfer">
-                        <label>Número da Conta de Destino:</label>
-                        <input
-                            className="form-input"
-                            type="text"
-                            value={numeroContaDestino}
-                            onChange={(e) => setNumeroContaDestino(e.target.value)}
-                            placeholder="Ex: 123456"
-                            required
-                        />
-                    </div>
+            {/* CONTEÚDO CENTRALIZADO */}
+            <div className="transferencia-content">
+                <div className="transferencia-box">
+                    <h2>Transferência</h2>
+                    
+                    {mensagem && (
+                        <p className={mensagem.startsWith('Erro') ? 'message-error' : 'message-success'}>
+                            {mensagem}
+                        </p>
+                    )}
 
-                    {/* Campo Valor */}
-                    <div className="form-group-transfer">
-                        <label>Valor (ex: 50.00):</label>
-                        <input
-                            className="form-input"
-                            type="number"
-                            step="0.01"
-                            value={valor}
-                            onChange={(e) => setValor(e.target.value)}
-                            placeholder="Ex: 50.00"
-                            required
-                        />
-                    </div>
+                    <form onSubmit={handleSubmit} className="transferencia-form">
+                        <div className="form-group-transfer">
+                            <label>Número da Conta de Destino:</label>
+                            <input
+                                className="form-input"
+                                type="text"
+                                value={numeroContaDestino}
+                                onChange={(e) => setNumeroContaDestino(e.target.value)}
+                                placeholder="Ex: 123456"
+                                required
+                            />
+                        </div>
 
-                    {/* Botão de Confirmação */}
-                    <button type="submit" className="confirm-transfer-button">
-                        Confirmar Transferência
-                    </button>
-                </form>
+                        <div className="form-group-transfer">
+                            <label>Valor (ex: 50.00):</label>
+                            <input
+                                className="form-input"
+                                type="number"
+                                step="0.01"
+                                value={valor}
+                                onChange={(e) => setValor(e.target.value)}
+                                placeholder="Ex: 50.00"
+                                required
+                            />
+                        </div>
 
-                {/* Botão Voltar */}
-                <button onClick={() => navigate('/inicio')} className="back-button">Voltar</button>
-            </div>
-        </div>
-    );
+                        <button type="submit" className="confirm-transfer-button">
+                            Confirmar Transferência
+                        </button>
+                    </form>
+
+                    <button onClick={() => navigate('/inicio')} className="back-button">
+                        Voltar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export default Transferencia;

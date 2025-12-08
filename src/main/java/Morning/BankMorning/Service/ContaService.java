@@ -47,21 +47,22 @@ public class ContaService {
             return null;
         }
 
-        // A potencial falha (500) está aqui. Garante que se a conta existir, o usuário seja carregado.
+        // Se este método for chamado dentro de um método @Transactional,
+        // o acesso a conta.getUsuario() será resolvido (EAGER loading manual).
         UsuarioResponse usuarioResponse = conta.getUsuario() != null
                 ? usuarioService.converterParaResponse(conta.getUsuario())
                 : null;
 
-        // CORREÇÃO: Garantir que o numeroConta seja incluído no DTO de resposta
         return new ContaResponse(
                 conta.getIdConta(),
                 conta.getAgencia(),
                 conta.getSaldo(),
-                conta.getNumeroConta(), // <--- INCLUSÃO DO NUMERO DA CONTA
+                conta.getNumeroConta(),
                 usuarioResponse
         );
     }
 
+    // Os métodos de leitura abaixo garantem a transação aberta para o Lazy Loading:
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorId(Integer id) {
         Conta conta = contaRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
@@ -69,23 +70,16 @@ public class ContaService {
         return converterParaResponse(conta);
     }
 
-    /**
-     * CORREÇÃO FINAL PARA O DASHBOARD: Usa o E-mail (identificador do JWT) para buscar a Conta.
-     */
     @Transactional(readOnly = true)
-    public BigDecimal buscarSaldoPorCpf(String identificador) { // Nome alterado para refletir que não é necessariamente CPF
-
-        // CORRIGIDO: Usando o método que busca pelo E-mail do usuário (findByUsuario_Email)
+    public BigDecimal buscarSaldoPorCpf(String identificador) {
         Conta conta = contaRepository.findByUsuario_Email(identificador)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada para o usuário logado."));
 
         return conta.getSaldo();
     }
 
-    // Métodos existentes...
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorCpfUsuario(String cpf) {
-
         Conta conta = contaRepository.findByUsuario_Cpf(cpf).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
 
         return converterParaResponse(conta);
@@ -93,10 +87,21 @@ public class ContaService {
 
     @Transactional(readOnly = true)
     public ContaResponse buscarContaPorEmailUsuario(String email) {
-
         Conta conta = contaRepository.findByUsuario_Email(email).orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada"));
 
         return converterParaResponse(conta);
+    }
+
+    // 💥 NOVO MÉTODO ADICIONADO (CORREÇÃO FINAL para o Controller/Service):
+    @Transactional(readOnly = true)
+    public Conta buscarContaModelPorEmailUsuario(String email) {
+        // Busca a conta e o usuário aninhado usando o repositório
+        Conta conta = contaRepository.findByUsuario_Email(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Conta não encontrada para o usuário logado."));
+
+        // Retorna o objeto Model (Conta) que o TransacaoController precisa.
+        // A transação aberta garante que o Usuário (LAZY) esteja disponível se necessário.
+        return conta;
     }
 
     @Transactional
@@ -106,10 +111,7 @@ public class ContaService {
         }
 
         Conta conta = new Conta();
-
-        // A senha JÁ vem criptografada do UsuarioService. Apenas salve.
         conta.setSenha(contaRequest.senha());
-
         conta.setUsuario(usuario);
         conta.setSaldo(BigDecimal.ZERO);
         conta.setAgencia("777");

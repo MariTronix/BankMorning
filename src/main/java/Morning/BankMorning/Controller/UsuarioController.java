@@ -8,14 +8,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal; // Importação necessária
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/api/usuarios") // Altere o RequestMapping para /api/usuarios se for o padrão
 public class UsuarioController {
 
     @Autowired
     private UsuarioService service;
 
+    // Rota: GET /api/usuarios/profile
+    // Esta rota é o fallback que o frontend está buscando para obter o nome.
+    @GetMapping("/profile")
+    public ResponseEntity<UsuarioResponse> getProfile(Principal principal) {
+        // Obtém o identificador (E-mail ou CPF) do JWT
+        String identificador = principal.getName();
+
+        // Chama o Service para buscar o perfil (que deve ter o @Transactional para resolver Lazy Loading)
+        UsuarioResponse response = service.buscarPerfilPorEmail(identificador);
+
+        return ResponseEntity.ok(response);
+    }
+
+    // NOTA: Os caminhos de rotas abaixo são relativos a /api/usuarios
 
     @PutMapping("/{id}")
     public ResponseEntity<UsuarioResponse> atualizar(@PathVariable Integer id, @RequestBody @Valid UsuarioRequest request) {

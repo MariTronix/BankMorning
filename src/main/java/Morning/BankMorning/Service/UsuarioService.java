@@ -42,8 +42,26 @@ public class UsuarioService {
             return null;
         }
 
+        // Assumindo que a resposta do DTO (UsuarioResponse) está correta:
         return new UsuarioResponse(usuario.getNome(), usuario.getEmail(), usuario.getCpf());
     }
+
+    // =========================================================================
+    // NOVO MÉTODO: BUSCA DE PERFIL (USADO PELO UsuarioController)
+    // =========================================================================
+    /**
+     * Busca um usuário pelo e-mail e converte para DTO.
+     * @param email O e-mail (identificador do JWT)
+     * @return UsuarioResponse
+     */
+    @Transactional(readOnly = true)
+    public UsuarioResponse buscarPerfilPorEmail(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Usuário não encontrado para o email: " + email));
+
+        return converterParaResponse(usuario);
+    }
+    // =========================================================================
 
     @Transactional
     public UsuarioResponse cadastrarNovoUsuarioeConta(CadastroRequest request) {
@@ -65,9 +83,7 @@ public class UsuarioService {
 
         Usuario usuarioCadastrado = usuarioRepository.save(usuarioSendoCadastrado);
 
-        // =========================================================================
         // CORREÇÃO CRÍTICA: CRIPTOGRAFAR A SENHA ANTES DE CRIAR A CONTA
-        // =========================================================================
         String senhaCriptografada = passwordEncoder.encode(request.senha());
 
         // Passa a senha JÁ CRIPTOGRAFADA para o DTO da Conta

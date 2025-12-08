@@ -1,26 +1,54 @@
-/* Importar fonte (Reutilizando a do projeto) */
+/* Importar fonte */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Estilos Globais para Centralização */
+/* Variáveis de cores (mesmas do Home.css) */
+:root {
+    --primary-orange: #FF6600;
+    --secondary-blue: #1E3A5F;
+    --light-background: #F7F9FC;
+    --text-color: #333;
+    --credit-green: #10B981;
+    --debit-red: #EF4444;
+    --border-color: #e0e0e0;
+    --sidebar-width: 250px;
+}
+
+/* ------------------------------------------- */
+/* CONTAINER PRINCIPAL COM SIDEBAR             */
+/* ------------------------------------------- */
+
+/* O container usa o mesmo layout do Home.jsx */
 .deposito-container {
-    /* Centraliza a caixa de depósito no meio da viewport */
+    display: flex;
+    width: 100vw;
+    min-height: 100vh;
+    background-color: var(--light-background);
+}
+
+/* ------------------------------------------- */
+/* CONTEÚDO CENTRALIZADO                       */
+/* ------------------------------------------- */
+
+.deposito-content {
+    flex-grow: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: var(--light-background);
-    padding: 20px;
-    box-sizing: border-box;
+    padding: 30px;
+    margin-left: var(--sidebar-width); /* Compensa a sidebar fixa */
 }
 
-/* Caixa Principal do Formulário (O Card) */
+/* ------------------------------------------- */
+/* CAIXA DO FORMULÁRIO (CARD)                  */
+/* ------------------------------------------- */
+
 .deposito-box {
-    background-color: #fff;
+    background-color: white;
     padding: 40px;
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     width: 100%;
-    max-width: 400px; /* Largura máxima para focar o usuário */
+    max-width: 450px;
     text-align: center;
 }
 
@@ -31,15 +59,19 @@
     font-weight: 600;
 }
 
-/* Formulário e Grupos de Input */
+/* ------------------------------------------- */
+/* FORMULÁRIO                                  */
+/* ------------------------------------------- */
+
 .deposito-form {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Espaço entre os campos */
+    gap: 15px;
 }
 
 /* Inputs */
-.deposito-box input {
+.deposito-box input,
+.form-input {
     width: 100%;
     padding: 12px 15px;
     border: 1px solid var(--border-color);
@@ -47,13 +79,19 @@
     font-size: 16px;
     box-sizing: border-box;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-family: 'Inter', sans-serif;
 }
 
-.deposito-box input:focus {
-    border-color: var(--primary-orange); 
+.deposito-box input:focus,
+.form-input:focus {
+    border-color: var(--primary-orange);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2); 
+    box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
 }
+
+/* ------------------------------------------- */
+/* BOTÕES                                      */
+/* ------------------------------------------- */
 
 /* Botão de Confirmação */
 .confirm-button {
@@ -67,11 +105,12 @@
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
     margin-top: 10px;
+    font-family: 'Inter', sans-serif;
 }
 
 .confirm-button:hover {
-    background-color: #e65c00; 
-    transform: translateY(-2px); 
+    background-color: #e65c00;
+    transform: translateY(-2px);
 }
 
 /* Botão Voltar */
@@ -85,25 +124,61 @@
     margin-top: 20px;
     width: 100%;
     transition: background-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
 }
 
 .back-button:hover {
     background-color: var(--light-background);
 }
 
-/* Mensagens de Feedback */
+/* ------------------------------------------- */
+/* MENSAGENS DE FEEDBACK                       */
+/* ------------------------------------------- */
+
 .message-error {
-    color: var(--error-red);
-    background-color: rgba(239, 68, 68, 0.1); 
+    color: var(--debit-red);
+    background-color: rgba(239, 68, 68, 0.1);
     padding: 10px;
     border-radius: 8px;
-    margin-top: 15px;
+    margin-bottom: 15px;
+    font-weight: 500;
 }
 
 .message-success {
     color: var(--credit-green);
-    background-color: rgba(16, 185, 129, 0.1); 
+    background-color: rgba(16, 185, 129, 0.1);
     padding: 10px;
     border-radius: 8px;
-    margin-top: 15px;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+/* ------------------------------------------- */
+/* RESPONSIVO - MOBILE                         */
+/* ------------------------------------------- */
+
+@media (max-width: 900px) {
+    .deposito-container {
+        flex-direction: column;
+    }
+
+    .deposito-content {
+        margin-left: 0;
+        padding: 20px;
+        min-height: calc(100vh - 80px); /* Compensa altura da sidebar mobile */
+    }
+
+    .deposito-box {
+        padding: 30px 25px;
+        max-width: 100%;
+    }
+
+    .deposito-box h2 {
+        font-size: 1.5rem;
+    }
+
+    .confirm-button {
+        font-size: 16px;
+    }
 }

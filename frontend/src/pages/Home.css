@@ -1,101 +1,101 @@
 /* Importar uma fonte Sans-serif limpa */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Cores do projeto */
-:root {
-    --primary-orange: #FF6600; 
-    --secondary-blue: #1E3A5F; 
-    --light-background: #F7F9FC; 
-    --text-color: #333; 
-    --credit-green: #10B981; 
-    --debit-red: #EF4444; 
+:root{
+    --primary-orange: #E68A33;
+    --secondary-blue: #1E3A5F;
+    --light-background: #F7F9FC;
+    --text-color: #333;
+    --credit-green: #10B981;
+    --debit-red: #EF4444;
     --border-color: #e0e0e0;
+    --sidebar-width: 250px;
 }
 
+
 /* ------------------------------------------- */
-/* 0. ESTRUTURA GLOBAL E CENTRALIZAÇÃO         */
+/* 0. ESTRUTURA GLOBAL E LAYOUT PRINCIPAL      */
 /* ------------------------------------------- */
-body {
-    font-family: 'Inter', sans-serif;
+
+/* Reseta o body para ocupar 100% da tela */
+body{
     margin: 0;
     padding: 0;
-    background-color: var(--light-background); 
+    background-color: var(--light-background);
     color: var(--text-color);
-    /* Centraliza o conteúdo (dashboard-container) no body */
-    display: flex; 
-    justify-content: center;
+    min-height: 100vh; 
+    display: flex;
 }
 
-.dashboard-container {
+/* Container que divide Sidebar e Main Content */
+.app-layout {
+    display: flex;
+    width: 100vw;
+    min-height: 100vh;
+}
+
+.loading-container {
+    width: 100%;
+    text-align: center;
+    padding-top: 50px;
+    font-size: 1.2rem;
+    color: var(--secondary-blue);
+}
+
+/* ------------------------------------------- */
+/* 1. SIDEBAR (PADRÃO: FIXA À ESQUERDA - DESKTOP)*/
+/* ------------------------------------------- */
+
+.sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    background-color: var(--primary-orange);
+    color: white;
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
-    width: 100%;
-    padding-top: 30px; 
-}
-
-/* ------------------------------------------- */
-/* 1. CABEÇALHO (SIDEBAR) - CENTRALIZADO EM BLOCO */
-/* ------------------------------------------- */
-.sidebar {
-    width: 100%;
-    max-width: 960px; /* Largura máxima do conteúdo */
-    padding: 15px 20px;
-    background-color: var(--primary-orange); 
-    color: white;
-    border-radius: 12px; 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-    
-    /* Centraliza a sidebar na tela */
-    margin: 0 auto 30px auto; 
-    
-    /* Layout para Nome > Links + Botão Sair */
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
+    padding: 20px 0; 
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: 100;
 }
 
 .sidebar-header {
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: 30px;
+    padding: 0 20px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .sidebar-logo {
-    width: 30px; 
+    width: 30px;
     height: 30px;
     margin-right: 10px;
-    /* Torna o logo visível para o layout final */
-    display: block; 
+    display: block;
 }
 
 .sidebar-header h1 {
-    font-size: 1.4rem; 
+    font-size: 1.4rem;
     font-weight: 700;
     margin: 0;
-    color: var(--secondary-blue); 
-}
-
-/* Container para agrupar Navegação e o botão Sair na mesma linha */
-.sidebar-nav-container { 
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Empurra o botão Sair para a direita */
-    border-top: 1px solid rgba(255, 255, 255, 0.2); 
-    padding-top: 10px;
+    color: var(--secondary-blue);
 }
 
 /* Navegação (Links) */
+.sidebar-nav-container {
+    flex-grow: 1; /* Ocupa o espaço central no desktop */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 .sidebar-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
-    display: flex; 
-    justify-content: flex-start; /* Links alinhados à esquerda do nav */
-    gap: 15px; 
 }
 
 .sidebar-nav li a {
@@ -103,48 +103,53 @@ body {
     align-items: center;
     color: white;
     text-decoration: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    transition: background-color 0.3s, color 0.3s;
+    padding: 12px 20px;
+    transition: background-color 0.3s;
 }
 
 .sidebar-nav li a:hover,
 .sidebar-nav li a.active {
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left: 4px solid var(--secondary-blue);
+    padding-left: 16px;
 }
 
 .sidebar-nav li a span {
-    margin-left: 5px;
+    margin-left: 10px;
+    font-weight: 500;
 }
 
-/* Botão Sair */
 .logout-button {
-    background: none;
-    border: 1px solid white;
+    /* CORREÇÃO PARA DESKTOP: Alinha o botão ao fundo */
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
-    padding: 10px 15px;
+    padding: 12px 15px;
     border-radius: 8px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    transition: background-color 0.3s, border-color 0.3s;
-    margin-left: auto; /* Garante que o botão vá para a direita */
+    justify-content: center;
+    transition: all 0.3s;
+    width: calc(100% - 40px);
+    margin: 30px auto; /* Mantém a margem de 20px nas laterais e superior/inferior */
+    margin-top: auto; /* Empurra para o final do contêiner flexível */
 }
 
 .logout-button:hover {
-    background-color: rgba(0, 0, 0, 0.1);
-    border-color: white;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
 }
-
 
 /* ------------------------------------------- */
 /* 2. CONTEÚDO PRINCIPAL (MAIN CONTENT)        */
 /* ------------------------------------------- */
+
 .main-content {
-    width: 100%;
-    max-width: 960px; /* Alinha com a largura do menu */
-    margin: 0 auto; 
-    padding: 20px 30px 30px; 
+    flex-grow: 1;
+    padding: 30px; /* Ajustado padding superior */
+    max-width: calc(100% - var(--sidebar-width));
+    overflow-y: auto;
 }
 
 .greeting-header {
@@ -158,29 +163,42 @@ body {
 /* CARDS E WIDGETS (Layout e Estilo)           */
 /* ------------------------------------------- */
 
+/* Mantido o grid de 2fr 1fr para desktop */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr; 
+    grid-template-columns: 2fr 1fr;
     gap: 30px;
     margin-bottom: 30px;
 }
 
-/* CARD PRINCIPAL (SALDO) */
-.balance-card {
+.balance-card,
+.actions-widget,
+.recent-transactions-widget {
     background-color: white;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.balance-card {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
 
-.balance-card h3 {
+.balance-card h3,
+.actions-widget h3,
+.recent-transactions-widget h3 {
     color: var(--secondary-blue);
     font-size: 1.1rem;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 15px;
+}
+
+.balance-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .balance-amount {
@@ -190,29 +208,25 @@ body {
     margin-bottom: 10px;
 }
 
+.eye-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--secondary-blue);
+    padding: 0;
+    margin-top: -10px;
+}
+
 .account-info {
     font-size: 0.9rem;
     color: #666;
 }
 
 /* WIDGET DE AÇÕES RÁPIDAS */
-.actions-widget {
-    background-color: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
-
-.actions-widget h3 {
-    color: var(--secondary-blue);
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    font-weight: 600;
-}
 
 .actions-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); 
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
 }
 
@@ -226,9 +240,10 @@ body {
     font-weight: 600;
     transition: background-color 0.3s ease;
     border: 1px solid var(--border-color);
-    display: flex; 
-    flex-direction: column; 
+    display: flex;
+    flex-direction: column;
     align-items: center;
+    gap: 5px;
 }
 
 .action-button:hover {
@@ -237,39 +252,63 @@ body {
     border-color: var(--primary-orange);
 }
 
+.full-width-button {
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 20px !important;
+}
+
 /* WIDGET DE EXTRATO RECENTE */
+
 .recent-transactions-widget {
-    grid-column: 1 / -1; 
-    background-color: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    grid-column: 1 / -1;
 }
 
-.recent-transactions-widget h3 {
-    color: var(--secondary-blue);
-    font-size: 1.1rem;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-
-/* Estilos para a lista de transações (usada no Home e Extrato) */
 .transaction-list {
     list-style: none;
     padding: 0;
     margin: 0;
+    /* max-height e overflow-y removidos para evitar scrollbar interno no desktop, 
+       mas reintroduzidos no código fornecido. Vamos manter para garantir as 5 transações */
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+/* Estilo para scrollbar */
+.transaction-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.transaction-list::-webkit-scrollbar-track {
+    background: var(--light-background);
+    border-radius: 10px;
+}
+
+.transaction-list::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.transaction-list::-webkit-scrollbar-thumb:hover {
+    background: #999;
 }
 
 .transaction-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
+    padding: 3px 25px 1px 0px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .transaction-item:last-child {
     border-bottom: none;
+}
+
+.transaction-details {
+    display: flex;
+    flex-direction: column;
 }
 
 .transaction-type {
@@ -295,42 +334,101 @@ body {
     color: var(--debit-red);
 }
 
+/* ------------------------------------------- */
+/* MEDIA QUERY (Mobile/Telas Pequenas)         */
+/* ------------------------------------------- */
 
-/* ------------------------------------------- */
-/* MEDIA QUERY (Mobile/Telas Pequenas)         */
-/* ------------------------------------------- */
-@media (max-width: 900px) {
-    .sidebar {
-        /* Remove o limite de largura e a borda arredondada no topo da tela */
-        max-width: 100%;
-        border-radius: 0;
-        padding: 15px;
-    }
-    .sidebar-header {
-        /* Torna o logo visível no mobile */
-        display: flex;
-    }
-    .sidebar-nav-container {
-        /* Stack navigation e botão sair em mobile */
+/* Volta para o layout vertical em telas pequenas/móveis */
+@media (max-width: 900px){
+    .app-layout {
         flex-direction: column;
-        justify-content: center;
+    }
+    
+    /* Sidebar Horizontal no Mobile */
+    .sidebar {
+        position: relative;
+        height: auto;
+        width: 100%;
+        min-width: unset;
+        border-radius: 0;
+        padding: 15px 20px;
+        box-shadow: 0 4px 5px rgba(0, 0, 0, 0.1);
+        
+        /* Ajuste do layout interno para horizontal */
+        flex-direction: row; 
+        justify-content: space-between; 
+        align-items: center; 
+    }
+    
+    /* Esconde o logo e título no mobile para economizar espaço */
+    .sidebar-header {
+        margin-bottom: 0;
+        padding: 0;
+    }
+    
+    /* Container de navegação principal (links + botão) */
+    .sidebar-nav-container {
+        flex-direction: row; 
         align-items: center;
-        padding-top: 10px;
+        justify-content: space-between;
+        width: 100%; 
+        gap: 10px;
+        padding: 0 10px;
     }
+
+    /* Links de navegação */
     .sidebar-nav ul {
-        margin-bottom: 15px;
-        flex-wrap: wrap; /* Permite que os botões quebrem a linha */
-        justify-content: center;
+        display: flex;
+        flex-direction: row;
     }
+    
+    .sidebar-nav li a {
+        padding: 8px 10px;
+        font-size: 0; /* Esconde o texto */
+    }
+    
+    .sidebar-nav li a svg {
+        font-size: 20px; /* Restaura o tamanho do ícone */
+    }
+    
+    .sidebar-nav li a span {
+        display: none; /* Esconde o texto, deixando apenas o ícone no mobile */
+    }
+
     .logout-button {
-        margin-left: 0;
+        margin: 0;
+        margin-right: 20px;
+        padding: 10px 15px;
+        width: auto;
+        background: white;
+        color: var(--primary-orange);
+        border: 2px solid white;
+        font-size: 0;
     }
+
+    /* Mostra apenas o ícone */
+    .logout-button svg {
+        font-size: 22px;
+        margin: 0 !important;
+    }
+
+    .logout-button:hover {
+        background: rgba(255, 255, 255, 0.9);
+    }
+
     .main-content {
         padding: 20px;
         max-width: 100%;
+        overflow-y: visible;
     }
-    .dashboard-grid {
-        grid-template-columns: 1fr; 
+
+    .dashboard-grid{
+        grid-template-columns: 1fr;
         gap: 20px;
+    }
+
+    /* Esconde as últimas movimentações no mobile */
+    .recent-transactions-widget {
+        display: none;
     }
 }

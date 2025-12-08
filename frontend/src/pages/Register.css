@@ -1,20 +1,17 @@
-/* Importar uma fonte Sans-serif limpa */
+/* ========================================= */
+/* 1. CONFIGURAÇÕES GERAIS E VARIÁVEIS       */
+/* ========================================= */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Cores do projeto (Mantenha as variáveis de cor para consistência!) */
 :root {
     --primary-orange: #FF6600; 
     --secondary-blue: #1E3A5F; 
     --light-background: #F7F9FC; 
     --text-color: #333; 
     --error-red: #EF4444; 
-    --success-green: #10B981;
     --border-color: #e0e0e0; 
 }
 
-/* ------------------------------------------- */
-/* ESTRUTURA GLOBAL (IDÊNTICO AO LOGIN)        */
-/* ------------------------------------------- */
 body {
     font-family: 'Inter', sans-serif;
     margin: 0;
@@ -22,26 +19,26 @@ body {
     background-color: var(--light-background); 
     min-height: 100vh; 
     color: var(--text-color);
-    overflow: hidden; 
+    overflow: hidden; /* Evita scroll na página principal (o scroll será interno no formulário) */
 }
 
-.register-split-container { /* Renomeado para register-split-container */
+/* ========================================= */
+/* 2. LAYOUT SPLIT (DIVISÃO DA TELA)         */
+/* ========================================= */
+.register-split-container {
     display: flex;
     height: 100vh;
     width: 100vw;
 }
 
-/* ------------------------------------------- */
-/* COLUNA VISUAL (IDÊNTICO AO LOGIN)           */
-/* ------------------------------------------- */
+/* --- LADO ESQUERDO: VISUAL (Imagem + Overlay) --- */
 .visual-area-cadastro {
-    flex: 3; 
-    /* Adicione background-image e overlay aqui, igual ao Login.css */
-    /* Exemplo: */
+    flex: 3; /* Ocupa 60% da tela */
+    /* Certifique-se que o caminho da imagem está correto */
     background-image: url('../assets/cadastro.jpg'); 
     background-size: cover; 
     background-position: center; 
-    position: relative;    
+    position: relative; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -49,14 +46,17 @@ body {
     z-index: 1; 
 }
 
-/* Overlay Laranja */
-.visual-area::before {
+/* O Overlay Laranja/Azul (Igual ao Login) */
+.visual-area-cadastro::before {
     content: "";
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    /* Degradê idêntico ao login para consistência visual */
+    background: linear-gradient(135deg, rgba(255, 102, 0, 0.8), rgba(30, 58, 95, 0.7));
+    opacity: 0.9; 
     z-index: 0;
 }
 
@@ -64,7 +64,7 @@ body {
     color: white;
     text-align: center;
     max-width: 500px;
-    z-index: 2; 
+    z-index: 2; /* Fica acima do overlay */
 }
 
 .visual-logo-large {
@@ -84,66 +84,73 @@ body {
     font-weight: 300;
 }
 
-
-/* ------------------------------------------- */
-/* COLUNA DO FORMULÁRIO (register-box)         */
-/* ------------------------------------------- */
+/* --- LADO DIREITO: ÁREA DO FORMULÁRIO --- */
 .form-area {
-    flex: 2; 
+    flex: 2; /* Ocupa 40% da tela */
     background-color: #fff;
     display: flex;
-
+    justify-content: center;
     align-items: center;
     padding: 20px;
+    position: relative;
 }
 
-/* Caixa de Cadastro */
-.register-box { /* Renomeado para register-box */
+/* ========================================= */
+/* 3. CAIXA DE CADASTRO (BOX)                */
+/* ========================================= */
+.register-box {
     background-color: #fff;
-    padding: 20px 40px; /* Reduzido o padding vertical por ter mais campos */
+    padding: 40px;
     border-radius: 12px;
     box-shadow: none; 
     width: 100%;
-    max-width: 380px; 
+    max-width: 400px; /* Um pouco mais largo que o login para acomodar nomes longos */
     text-align: center;
-    /* Ajusta a altura máxima para que o formulário caiba na tela */
-    max-height: 100vh;
-    overflow-y: auto; 
+    
+    /* TRUQUE PARA CADASTRO: Scroll se o form for muito grande */
+    max-height: 95vh;
+    overflow-y: auto;
+    
+    /* Esconder barra de rolagem (opcional, estética) */
+    scrollbar-width: thin;
+    scrollbar-color: var(--secondary-blue) transparent;
 }
 
 .register-logo-small {
     max-width: 80px; 
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
-.register-title { /* Renomeado para register-title */
+.register-title {
     color: var(--secondary-blue);
     font-size: 26px; 
     margin-bottom: 25px;
     font-weight: 600;
 }
 
-.register-form { /* Renomeado para register-form */
+.register-form {
     display: flex;
     flex-direction: column;
-    gap: 15px; /* Reduzido o espaçamento entre campos */
+    gap: 15px; /* Espaçamento levemente menor que login para caber mais campos */
 }
 
-/* --- ESTILOS DE INPUT (Reutilizados) --- */
+/* ========================================= */
+/* 4. INPUTS E BOTÕES (IGUAIS AO LOGIN)      */
+/* ========================================= */
 .form-group {
     text-align: left;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 6px; /* Reduzido o margin */
+    margin-bottom: 6px;
     font-weight: 500;
     color: var(--secondary-blue);
 }
 
 .form-input {
     width: 100%;
-    padding: 10px 12px; /* Reduzido o padding */
+    padding: 12px 15px; /* Padding confortável */
     border: 1px solid var(--border-color);
     border-radius: 8px;
     font-size: 16px;
@@ -157,8 +164,7 @@ body {
     box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2); 
 }
 
-/* Botão de Cadastro */
-.register-button { /* Renomeado para register-button */
+.register-button {
     background-color: var(--primary-orange);
     color: white;
     padding: 14px 25px;
@@ -168,7 +174,7 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 .register-button:hover {
@@ -176,14 +182,14 @@ body {
     transform: translateY(-2px); 
 }
 
-/* Link para Login */
-.login-link { /* Renomeado para login-link */
+/* Link para voltar ao Login */
+.login-link {
     margin-top: 20px;
     font-size: 15px;
 }
 
 .login-link button {
-    color: var(--primary-orange) !important;
+    color: var(--primary-orange);
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s ease;
@@ -196,25 +202,64 @@ body {
 }
 
 .login-link button:hover {
-    color: var(--secondary-blue) !important;
+    color: var(--secondary-blue);
     text-decoration: underline;
 }
 
-/* Mensagens e Media Querys (Manutenção) */
-.login-message { /* Reutilizado, mas deve ser usado se houver erro */
-    margin-top: 15px;
-    font-size: 15px;
-    /* ... */
-}
+/* ========================================= */
+/* 5. RESPONSIVIDADE (MOBILE)                */
+/* ========================================= */
 
 @media (max-width: 768px) {
-    .visual-area {
+    /* Esconde a imagem lateral no mobile */
+    .visual-area-cadastro {
         display: none;
     }
+    
+    /* Formulário ocupa fundo cinza claro */
     .form-area {
-        flex: 1; 
+        flex: 1;
+        background-color: var(--light-background);
+        padding: 20px;
+        align-items: center; /* Centraliza verticalmente */
     }
+    
+    /* Cria o efeito de CARD flutuante no mobile */
     .register-box {
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 30px 25px;
+        max-height: none; /* Remove limite de altura no mobile */
+        overflow-y: visible;
+    }
+
+    .register-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+
+    .register-logo-small {
+        max-width: 70px;
+        margin-bottom: 15px;
+    }
+
+    .register-button {
+        font-size: 16px;
+        padding: 12px 20px;
+    }
+}
+
+/* Mobile muito pequeno (iPhone SE, etc) */
+@media (max-width: 400px) {
+    .register-box {
+        padding: 25px 20px;
+    }
+
+    .register-title {
+        font-size: 20px;
+    }
+
+    .form-input {
+        font-size: 14px;
+        padding: 10px 12px;
     }
 }

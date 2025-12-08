@@ -1,38 +1,61 @@
-/* Importar fonte (Reutilizando a do projeto) */
+/* Importar fonte */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-/* Cores do projeto (Reutilizadas) */
+/* Variáveis de cores (mesmas do Home.css) */
 :root {
-    --primary-orange: #FF6600; 
-    --secondary-blue: #1E3A5F; 
-    --light-background: #F7F9FC; 
-    --text-color: #333; 
-    --credit-green: #10B981; /* Crédito (Depósito/Transferência Recebida) */
-    --debit-red: #EF4444; /* Débito (Saque/Transferência Enviada) */
-    --border-color: #e0e0e0; 
+    --primary-orange: #FF6600;
+    --secondary-blue: #1E3A5F;
+    --light-background: #F7F9FC;
+    --text-color: #333;
+    --credit-green: #10B981;
+    --debit-red: #EF4444;
+    --border-color: #e0e0e0;
+    --sidebar-width: 250px;
 }
 
 /* ------------------------------------------- */
-/* ESTRUTURA DA PÁGINA                         */
+/* CONTAINER PRINCIPAL COM SIDEBAR             */
 /* ------------------------------------------- */
-.extrato-container {
+
+.extrato-page-container {
+    display: flex;
+    width: 100vw;
+    min-height: 100vh;
+    background-color: var(--light-background);
+}
+
+/* ------------------------------------------- */
+/* CONTEÚDO DO EXTRATO                         */
+/* ------------------------------------------- */
+
+.extrato-content {
+    flex-grow: 1;
     padding: 30px;
-    max-width: 900px; /* Largura maior para tabela */
-    margin: 30px auto; /* Centraliza o container */
+    margin-left: var(--sidebar-width);
+    max-width: calc(100% - var(--sidebar-width));
+}
+
+.extrato-container {
+    max-width: 1000px;
+    margin: 0 auto;
     background-color: white;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 30px;
 }
 
 .extrato-container h2 {
+    text-align: center;
     color: var(--secondary-blue);
-    font-size: 2rem;
+    font-size: 1.8rem;
     margin-bottom: 20px;
     font-weight: 700;
-    text-align: center;
 }
 
-/* Botão Voltar */
+/* ------------------------------------------- */
+/* BOTÃO VOLTAR                                */
+/* ------------------------------------------- */
+
 .back-button {
     background: none;
     border: 1px solid var(--border-color);
@@ -40,53 +63,77 @@
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     transition: background-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
 }
 
 .back-button:hover {
     background-color: var(--light-background);
 }
 
-/* Mensagens de Erro */
+/* ------------------------------------------- */
+/* MENSAGENS                                   */
+/* ------------------------------------------- */
+
 .error-message {
     color: var(--debit-red);
-    background-color: rgba(239, 68, 68, 0.1); 
-    padding: 10px;
+    background-color: rgba(239, 68, 68, 0.1);
+    padding: 12px;
     border-radius: 8px;
-    margin-top: 10px;
+    margin: 15px 0;
+    font-weight: 500;
 }
 
 /* ------------------------------------------- */
 /* TABELA DE TRANSAÇÕES                        */
 /* ------------------------------------------- */
+
 .transaction-table {
     width: 100%;
-    border-collapse: collapse; /* Remove espaçamento entre bordas */
+    border-collapse: collapse;
     margin-top: 20px;
+    font-family: 'Inter', sans-serif;
 }
 
-.transaction-table th, .transaction-table td {
-    padding: 12px 15px;
+.transaction-table th,
+.transaction-table td {
+    padding: 15px 12px;
     text-align: left;
     border-bottom: 1px solid var(--border-color);
 }
 
 .transaction-table th {
-    background-color: var(--primary-orange); /* Cabeçalho escuro */
+    background-color: var(--primary-orange);
     color: white;
     font-weight: 600;
     text-transform: uppercase;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
-.transaction-table tr:hover {
+.transaction-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.transaction-table tbody tr:hover {
     background-color: var(--light-background);
+}
+
+.transaction-table td {
+    font-size: 0.95rem;
+    color: var(--text-color);
 }
 
 /* Coluna de Valor */
 .amount-cell {
     font-weight: 700;
+    font-size: 1rem;
+    white-space: nowrap;
 }
 
 /* Destaque Crédito (Positivo) */
@@ -97,4 +144,75 @@
 /* Destaque Débito (Negativo) */
 .amount-debit {
     color: var(--debit-red);
+}
+
+/* ------------------------------------------- */
+/* LOADING E MENSAGENS VAZIAS                  */
+/* ------------------------------------------- */
+
+.extrato-container > p {
+    text-align: center;
+    color: #666;
+    font-size: 1rem;
+    margin-top: 30px;
+}
+
+/* ------------------------------------------- */
+/* RESPONSIVO - MOBILE                         */
+/* ------------------------------------------- */
+
+@media (max-width: 900px) {
+    .extrato-page-container {
+        flex-direction: column;
+    }
+
+    .extrato-content {
+        margin-left: 0;
+        padding: 20px 15px;
+        max-width: 100%;
+    }
+
+    .extrato-container {
+        padding: 20px 15px;
+        border-radius: 0;
+    }
+
+    .extrato-container h2 {
+        font-size: 1.5rem;
+    }
+
+    /* Tabela responsiva - scroll horizontal */
+    .transaction-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .transaction-table {
+        min-width: 600px;
+    }
+
+    .transaction-table th,
+    .transaction-table td {
+        padding: 10px 8px;
+        font-size: 0.85rem;
+    }
+
+    .transaction-table th {
+        font-size: 0.75rem;
+    }
+
+    .amount-cell {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .transaction-table {
+        min-width: 500px;
+    }
+
+    .transaction-table th,
+    .transaction-table td {
+        padding: 8px 6px;
+    }
 }

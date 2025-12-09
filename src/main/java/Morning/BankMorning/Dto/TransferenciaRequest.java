@@ -14,20 +14,16 @@ public class TransferenciaRequest {
     @DecimalMin(value = "0.01", message = "O valor deve ser positivo.")
     private BigDecimal valor;
 
-    // --- 1. CONSTRUTOR VAZIO ---
-    // Obrigatório para o Spring/Jackson converter o JSON
+    // Construtor vazio para conseguir converter o JSON
     public TransferenciaRequest() {}
 
-    // --- 2. CONSTRUTOR PARA OS TESTES (Simplificado) ---
-    // A origem NÃO é mais recebida do JSON.
+    // COnstrutor para testes
     public TransferenciaRequest(String numeroContaDestino, BigDecimal valor) {
         this.numeroContaDestino = numeroContaDestino;
         this.valor = valor;
     }
 
-    // --- GETTERS E SETTERS ---
-    // Removido getNumeroContaOrigem() e setNumeroContaOrigem()
-
+    // Getters/Setters
     public String getNumeroContaDestino() {
         return numeroContaDestino;
     }

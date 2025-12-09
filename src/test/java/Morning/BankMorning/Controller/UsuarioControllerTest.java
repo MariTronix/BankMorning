@@ -25,23 +25,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Transactional // Garante que as alterações no banco sejam desfeitas após cada teste (Rollback)
+@Transactional
 class UsuarioControllerTest {
 
     @Autowired
-    private MockMvc mockMvc; // Simula as requisições HTTP (O "Postman" do código)
-    //
+    private MockMvc mockMvc;
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private ObjectMapper objectMapper; // Converte Objetos Java para JSON
+    private ObjectMapper objectMapper;
 
     private Integer idUsuarioExistente;
 
     @BeforeEach
     void setup() {
-        // 1. Cria um usuário real no banco antes de cada teste para termos o que editar/deletar
+        // Criando usdario
         Usuario usuario = new Usuario();
         usuario.setNome("Usuario Teste Controller");
         usuario.setCpf("999.888.777-66"); // CPF fixo de teste
@@ -49,29 +49,27 @@ class UsuarioControllerTest {
         usuario.setDataNascimento(LocalDate.of(1990, 1, 1));
         usuario.setRole(Role.ROLE_USUARIO);
 
-        // Precisamos salvar para gerar o ID
         Usuario salvo = usuarioRepository.save(usuario);
         idUsuarioExistente = salvo.getIdUsuario();
     }
 
     @Test
     @DisplayName("PUT /usuarios/{id} - Deve atualizar usuário com sucesso quando autenticado")
-    @WithMockUser(roles = "USUARIO") // Simula que estamos logados e temos permissão
+    @WithMockUser(roles = "USUARIO")
     void atualizar_Sucesso() throws Exception {
-        // Cenário: Dados novos para atualização
+        // Dados novos para atualização
         UsuarioRequest request = new UsuarioRequest(
                 "Nome Atualizado",
                 "novo.email@teste.com",
                 LocalDate.of(2000, 5, 20)
         );
 
-        // Ação: Faz o PUT
+        // Teste
         mockMvc.perform(put("/api/usuarios/" + idUsuarioExistente)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                // Verificação:
-                .andExpect(status().isOk()) // Espera 200 OK
-                .andExpect(jsonPath("$.nome").value("Nome Atualizado")) // Verifica se o JSON de resposta mudou
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Nome Atualizado"))
                 .andExpect(jsonPath("$.email").value("novo.email@teste.com"));
     }
 
@@ -80,18 +78,19 @@ class UsuarioControllerTest {
     void atualizar_SemLogin_DeveFalhar() throws Exception {
         UsuarioRequest request = new UsuarioRequest("Nome", "email", LocalDate.now());
 
-        // Ação: Faz o PUT sem a anotação @WithMockUser
+        // Executa o teste
         mockMvc.perform(put("/api/usuarios/" + idUsuarioExistente)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isForbidden()); // Espera 403 Forbidden
+                .andExpect(status().isForbidden());
     }
 
     @Test
     @DisplayName("DELETE /usuarios/{id} - Deve deletar usuário com sucesso")
     @WithMockUser(roles = "USUARIO")
     void deletar_Sucesso() throws Exception {
-        // Ação: Faz o DELETE
+
+
         mockMvc.perform(delete("/api/usuarios/" + idUsuarioExistente))
                 .andExpect(status().isOk());
 
@@ -103,9 +102,8 @@ class UsuarioControllerTest {
     @DisplayName("DELETE /usuarios/{id} - Deve retornar 404 se o usuário não existir")
     @WithMockUser(roles = "USUARIO")
     void deletar_NaoEncontrado() throws Exception {
-        // Tenta deletar um ID que com certeza não existe
+        // Tentar deletar um ID que com certeza não existe
         mockMvc.perform(delete("/api/usuarios/" + 999999))
-                .andExpect(status().isNotFound()); //O seu Service lança RecursoNaoEncontrado -> 404?
-        // Se lançar 500 ou 400, ajuste aqui para isInternalServerError() ou isBadRequest()
+                .andExpect(status().isNotFound());
     }
 }

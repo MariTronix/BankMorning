@@ -33,7 +33,7 @@ public class ContaService {
     private UsuarioService usuarioService;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // Injetado pelo Spring (não use 'new' aqui)
+    private PasswordEncoder passwordEncoder;
 
     public Conta converterParaModel(ContaRequest request) {
         if (request == null) {
@@ -58,7 +58,7 @@ public class ContaService {
                 conta.getIdConta(),
                 conta.getAgencia(),
                 conta.getSaldo(),
-                conta.getNumeroConta(), // Adicionado para bater com seu DTO
+                conta.getNumeroConta(),
                 usuarioResponse
         );
     }
@@ -110,7 +110,7 @@ public class ContaService {
 
         Conta conta = new Conta();
         
-        // CORREÇÃO DE SEGURANÇA: Criptografar a senha antes de salvar
+        // Criptografa a senha antes de salvar
         conta.setSenha(passwordEncoder.encode(contaRequest.senha()));
         
         conta.setUsuario(usuario);

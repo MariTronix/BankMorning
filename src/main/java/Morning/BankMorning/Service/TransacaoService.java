@@ -39,7 +39,6 @@ public class TransacaoService {
         String cpfContaOrigem = null;
         String cpfContaDestino = null;
 
-        // Acessos a getUsuario() são seguros se este método for chamado dentro de um contexto @Transactional(readOnly = true)
         if (transacao.getContaOrigem() != null && transacao.getContaOrigem().getUsuario() != null) {
             cpfContaOrigem = transacao.getContaOrigem().getUsuario().getCpf();
         }
@@ -104,18 +103,12 @@ public class TransacaoService {
     }
 
     // --- EXTRATO (Lógica de leitura) ---
-    /**
-     * CORREÇÃO: Usando @Transactional(readOnly = true) para garantir que o acesso
-     * às entidades LAZY (como o Usuario) no método converterParaResponse funcione,
-     * prevenindo o erro 500 Internal Server Error.
-     */
     @Transactional(readOnly = true)
     public List<TransacaoResponse> listarExtrato(Conta contaDoUsuario) {
         // Busca todas as transações onde a contaDoUsuario é a origem OU o destino
         // Esta chamada retorna entidades LAZY.
         List<Transacao> transacoes = transacaoRepository.findAllByContaOrigemOrContaDestinoOrderByDataHoraDesc(contaDoUsuario);
 
-        // O mapeamento ocorre DENTRO da transação, garantindo que o Lazy Loading seja resolvido.
         return transacoes.stream()
                 .map(this::converterParaResponse)
                 .collect(Collectors.toList());

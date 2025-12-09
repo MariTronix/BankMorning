@@ -26,7 +26,7 @@ public class TransacaoController {
     @Autowired
     private ContaService contaService;
 
-    // MÉTODO AUXILIAR: Busca a Conta usando o identificador do Principal
+    // Metodo auxiliar : Busca a Conta usando o identificador do Principal
     private Conta getContaDoUsuario(Principal principal) {
         String identificador = principal.getName();
         // CHAMA O NOVO MÉTODO no Service. Retorna a Conta ATTACHED.
@@ -40,10 +40,6 @@ public class TransacaoController {
             Principal principal,
             @RequestBody @Valid DepositoRequest request) {
 
-        // A conta do usuário logado (principal) NÃO é usada no depósito,
-        // pois o destino é especificado no 'request'. A linha foi removida para clareza.
-        // Conta contaDestino = getContaDoUsuario(principal); // ❌ REMOVIDA
-
         TransacaoResponse response = transacaoService.depositar( request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -54,7 +50,7 @@ public class TransacaoController {
             Principal principal,
             @RequestBody @Valid SaqueRequest request) {
 
-        Conta contaOrigem = getContaDoUsuario(principal); // Necessário para verificar saldo
+        Conta contaOrigem = getContaDoUsuario(principal);
         TransacaoResponse response = transacaoService.sacar(contaOrigem, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -65,7 +61,7 @@ public class TransacaoController {
             Principal principal,
             @RequestBody @Valid TransferenciaRequest request){
 
-        Conta contaOrigem = getContaDoUsuario(principal); // Necessário para verificar saldo
+        Conta contaOrigem = getContaDoUsuario(principal);
         TransacaoResponse response = transacaoService.transferir(contaOrigem, request);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -73,10 +69,9 @@ public class TransacaoController {
     // --- EXTRATO ---
     @GetMapping("/extrato")
     public ResponseEntity<List<TransacaoResponse>> verExtrato(Principal principal) {
-        // Usa o método auxiliar corrigido
+        // Usa o método auxiliar
         Conta contaDoUsuario = getContaDoUsuario(principal);
 
-        // Chama o Service (que tem o @Transactional para resolver o extrato)
         List<TransacaoResponse> extrato = transacaoService.listarExtrato(contaDoUsuario);
 
         return ResponseEntity.ok(extrato);

@@ -27,7 +27,6 @@ public class UsuarioService {
             return null;
         }
 
-        // Se o Record for (nome, cpf, email):
         return new UsuarioResponse(
                 usuario.getNome(),
                 usuario.getCpf(), 
@@ -63,7 +62,7 @@ public class UsuarioService {
 
         Usuario usuarioCadastrado = usuarioRepository.save(usuarioSendoCadastrado);
 
-        // Envia a senha CRUA. O ContaService criptografará.
+        // Envia a senha crua. O ContaService criptografa ela.
         ContaRequest contaRequest = new ContaRequest(request.senha(), usuarioCadastrado);
 
         contaService.criarConta(usuarioCadastrado, contaRequest);

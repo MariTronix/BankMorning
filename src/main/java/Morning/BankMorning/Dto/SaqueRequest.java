@@ -10,10 +10,10 @@ public class SaqueRequest {
     @DecimalMin(value = "0.01", message = "O valor deve ser positivo.")
     private BigDecimal valor;
 
-    // --- 1. CONSTRUTOR VAZIO ---
+    // Construtor Vazio
     public SaqueRequest() {}
 
-    // --- 2. CONSTRUTOR PARA TESTES (Simplificado) ---
+    // COnstrutor para os testes
     public SaqueRequest(BigDecimal valor) {
         this.valor = valor;
     }

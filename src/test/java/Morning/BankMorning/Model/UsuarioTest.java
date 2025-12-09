@@ -16,7 +16,7 @@ class UsuarioTest {
     void getUsername_DeveRetornarEmail() {
         Usuario usuario = new Usuario();
         usuario.setEmail("alberto321@gmail.com");
-//
+
         assertEquals("alberto321@gmail.com", usuario.getUsername());
     }
 

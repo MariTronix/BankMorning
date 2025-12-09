@@ -29,8 +29,6 @@ public class Conta {
     @Column(nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 
-    // CORREÇÃO: Removendo @OnDelete (O CascadeType.ALL em Usuario já lida com a deleção)
-    // Manter FetchType.EAGER é crucial para o login funcionar!
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_usuario", nullable = false) // A Conta é a proprietária da chave
     @JsonIgnore

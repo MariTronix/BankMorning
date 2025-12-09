@@ -19,7 +19,7 @@ public class Transacao {
     private BigDecimal valor;
 
     @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private TipoDeTransacao tipo;
 
     @Column(nullable = false)

@@ -37,23 +37,20 @@ class TokenServiceTest {
     @Test
     @DisplayName("Deve gerar token válido a partir de uma Conta")
     void gerarToken_Sucesso() {
-        // 1. ARRANGE
+        // Criando o usuário
         Usuario usuario = new Usuario();
         usuario.setCpf("123.456.789-00");
         usuario.setEmail("teste@email.com");
-        usuario.setRole(Role.ROLE_USUARIO); // Importante ter a Role definida
+        usuario.setRole(Role.ROLE_USUARIO);
 
         Conta conta = new Conta();
-        conta.setUsuario(usuario); // A conta precisa ter o usuário
+        conta.setUsuario(usuario);
 
-        // 2. ACT
         String token = tokenService.gerarToken(conta);
 
-        // 3. ASSERT
         assertNotNull(token);
         assertFalse(token.isEmpty());
 
-        // Decodifica manualmente para ver se os dados estão lá dentro
         String sujeito = JWT.require(Algorithm.HMAC256(secret))
                 .withIssuer("BankMorningAPI")
                 .build()
@@ -69,7 +66,6 @@ class TokenServiceTest {
         Conta contaSemUsuario = new Conta();
         contaSemUsuario.setUsuario(null);
 
-        // O seu código lança ArgumentoInvalidoException quando user é null
         assertThrows(ArgumentoInvalidoException.class, () -> {
             tokenService.gerarToken(contaSemUsuario);
         });
@@ -88,7 +84,6 @@ class TokenServiceTest {
 
         String token = tokenService.gerarToken(conta);
 
-        // Tenta validar
         boolean valido = tokenService.validarToken(token);
 
         assertTrue(valido);
@@ -99,14 +94,14 @@ class TokenServiceTest {
     void validarToken_Erro() {
         String tokenFalso = "token.falso.invalido";
 
-        // O seu código lança RuntimeException("Erro interno...") no catch genérico
+
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
             tokenService.validarToken(tokenFalso);
         });
 
         assertEquals("Erro interno ao validar Token.", exception.getMessage());
     }
-    //
+
     @Test
     @DisplayName("Deve recuperar o Subject (CPF) do token corretamente")
     void getSubject_Sucesso() {
@@ -121,25 +116,22 @@ class TokenServiceTest {
 
         String token = tokenService.gerarToken(conta);
 
-        // 2. Recupera subject
         String cpfRecuperado = tokenService.getSubject(token);
 
-        // 3. Verifica
         assertEquals("999.888.777-66", cpfRecuperado);
     }
 
     @Test
     @DisplayName("Deve lançar erro ao tentar pegar Subject de token expirado")
     void getSubject_ErroExpirado() {
-        // Cria um token expirado manualmente (ontem)
+        // Cria um token expirado manualmente
         String tokenExpirado = JWT.create()
                 .withIssuer("BankMorningAPI")
                 .withSubject("123.123.123-12")
                 .withExpiresAt(LocalDateTime.now().minusDays(1).toInstant(ZoneOffset.of("-03:00")))
                 .sign(Algorithm.HMAC256(secret));
 
-        // O seu método getSubject lança RuntimeException no catch genérico ou CredencialInvalidaException
-        // Pelo seu código, JWTVerificationException cai no catch(Exception e) -> RuntimeException
+
         assertThrows(RuntimeException.class, () -> {
             tokenService.getSubject(tokenExpirado);
         });

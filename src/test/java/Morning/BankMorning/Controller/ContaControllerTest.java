@@ -37,7 +37,7 @@ class ContaControllerTest {
 
     @BeforeEach
     void setup() {
-        // Cria usuário e conta para o teste
+        // Criando a conta
         Usuario usuario = new Usuario();
         usuario.setNome("Dono da Conta");
         usuario.setCpf("777.888.999-00");
@@ -74,7 +74,7 @@ class ContaControllerTest {
     @WithMockUser(roles = "USUARIO")
     void getConta_NaoEncontrada() throws Exception {
         mockMvc.perform(get("/api/account/id/" + 999999)) // ID inexistente
-                .andExpect(status().isNotFound()); // Ou isInternalServerError() se sua exception não estiver tratada
+                .andExpect(status().isNotFound());
     }
 
     @Test

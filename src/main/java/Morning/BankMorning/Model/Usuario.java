@@ -53,11 +53,10 @@ public class Usuario implements UserDetails {
 
     @Override
     public String getUsername() {
-        // CORREÇÃO FINAL: O front-end envia o e-mail, então o Spring deve buscar pelo e-mail.
         return email;
     }
 
-    // Métodos adicionais de UserDetails (mantidos no padrão Spring Security)
+    // Métodos adicionais mantidos no padrão Spring Security
     @Override
     public boolean isAccountNonExpired() {
         return true;

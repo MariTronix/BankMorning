@@ -32,7 +32,6 @@ class UsuarioServiceTest {
     @Mock
     private ContaService contaService;
 
-    // Adicionado pois ele existe no Service (mesmo se não usado na lógica atual, é boa prática mockar)
     @Mock
     private PasswordEncoder passwordEncoder;
 
@@ -44,7 +43,6 @@ class UsuarioServiceTest {
     @Test
     @DisplayName("Deve cadastrar usuário e solicitar criação de conta com sucesso")
     void cadastrar_Sucesso() {
-        // CENÁRIO
         CadastroRequest request = new CadastroRequest(
                 "Teste Silva",
                 "111.222.333-44",
@@ -53,7 +51,6 @@ class UsuarioServiceTest {
                 "senha123"
         );
 
-        // Mocks: Não deve encontrar ninguém com esse CPF nem Email
         when(usuarioRepository.findByCpf(request.cpf())).thenReturn(Optional.empty());
         when(usuarioRepository.findByEmail(request.email())).thenReturn(Optional.empty());
 
@@ -64,10 +61,8 @@ class UsuarioServiceTest {
             return u;
         });
 
-        // AÇÃO
         UsuarioResponse response = usuarioService.cadastrarNovoUsuarioeConta(request);
 
-        // VERIFICAÇÃO
         assertNotNull(response);
         assertEquals("Teste Silva", response.nome());
         assertEquals("teste@email.com", response.email());
@@ -75,7 +70,7 @@ class UsuarioServiceTest {
         // Verifica se o repository salvou
         verify(usuarioRepository, times(1)).save(any(Usuario.class));
 
-        // O MAIS IMPORTANTE: Verifica se chamou o ContaService para criar a conta
+        // Verifica se chamou o ContaService para criar a conta
         verify(contaService, times(1)).criarConta(any(Usuario.class), any(ContaRequest.class));
     }
 
@@ -89,7 +84,6 @@ class UsuarioServiceTest {
         // Mock: Encontra um usuário existente com esse CPF
         when(usuarioRepository.findByCpf(request.cpf())).thenReturn(Optional.of(new Usuario()));
 
-        // AÇÃO & VERIFICAÇÃO
         assertThrows(ArgumentoInvalidoException.class, () -> {
             usuarioService.cadastrarNovoUsuarioeConta(request);
         });
@@ -106,7 +100,6 @@ class UsuarioServiceTest {
                 "Teste", "111.222.333-44", "email@teste.com", LocalDate.now(), "123"
         );
 
-        // Mock: CPF ok, mas Email já existe
         when(usuarioRepository.findByCpf(request.cpf())).thenReturn(Optional.empty());
         when(usuarioRepository.findByEmail(request.email())).thenReturn(Optional.of(new Usuario()));
 
@@ -135,24 +128,20 @@ class UsuarioServiceTest {
         usuarioAntigo.setIdUsuario(id);
         usuarioAntigo.setNome("Nome Antigo");
         usuarioAntigo.setEmail("antigo@email.com");
-        // CORREÇÃO: Adicione o CPF aqui para evitar null pointer se os campos estiverem trocados
         usuarioAntigo.setCpf("000.000.000-00");
 
         when(usuarioRepository.findById(id)).thenReturn(Optional.of(usuarioAntigo));
 
         when(usuarioRepository.findByEmail(request.email())).thenReturn(Optional.empty());
 
-        // Garante que o objeto salvo (modificado) é o retornado
+        // Garante que o objeto salvo é o retornado
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(i -> i.getArguments()[0]);
 
         UsuarioResponse response = usuarioService.atualizarUsuario(id, request);
 
-        // Verificações
         assertNotNull(response);
         assertEquals("Nome Novo", response.nome());
 
-        // Se isso falhar dizendo "Expected: novo@... Actual: 000.000...",
-        // significa que sua ordem no UsuarioResponse está invertida (CPF vs Email).
         assertEquals("novo@email.com", response.email());
 
         verify(usuarioRepository).save(any(Usuario.class));
@@ -168,10 +157,9 @@ class UsuarioServiceTest {
         eu.setIdUsuario(meuId);
 
         Usuario outroUsuario = new Usuario();
-        outroUsuario.setIdUsuario(2); // Outra pessoa dona do email
+        outroUsuario.setIdUsuario(2);
 
         when(usuarioRepository.findById(meuId)).thenReturn(Optional.of(eu));
-        // O email que eu quero JÁ EXISTE e é do 'outroUsuario'
         when(usuarioRepository.findByEmail(request.email())).thenReturn(Optional.of(outroUsuario));
 
         assertThrows(ArgumentoInvalidoException.class, () -> {

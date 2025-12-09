@@ -29,10 +29,10 @@ class ContaTest {
     void saldo_DeveIniciarZerado() {
         Conta conta = new Conta();
 
-        // Verifica se o saldo não é nulo (graças ao ajuste no Model)
+        // Verifica se o saldo não é nulo
         assertNotNull(conta.getSaldo(), "O saldo inicial não deve ser nulo");
 
-        // Verifica se o valor é 0. O compareTo é mais seguro para BigDecimal que o equals
+        // Verifica se o valor é 0.
         assertEquals(0, conta.getSaldo().compareTo(BigDecimal.ZERO), "O saldo inicial deve ser 0");
     }
 
@@ -41,13 +41,12 @@ class ContaTest {
     void dataCriacao_NaoDeveSerVaziaAposPersistir() {
         Conta conta = new Conta();
 
-        // Antes de persistir, deve ser null (pois o banco ainda não tocou nela)
         assertNull(conta.getDataCriacao(), "Data deve ser nula antes de salvar");
 
         // Simula o evento do banco de dados
         conta.prePersist();
 
-        // Agora valida se foi preenchida
+        // Valida se foi preenchida
         assertNotNull(conta.getDataCriacao(), "Data de criação não pode vir vazia/nula após persistir");
     }
 }

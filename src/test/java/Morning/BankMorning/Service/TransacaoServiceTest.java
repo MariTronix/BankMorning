@@ -42,14 +42,12 @@ class TransacaoServiceTest {
     @Test
     @DisplayName("Deve depositar valor corretamente e atualizar saldo")
     void depositar_Sucesso() {
-        // 1. ARRANGE
         String numeroConta = "12345";
         BigDecimal saldoInicial = new BigDecimal("100.00");
         BigDecimal valorDeposito = new BigDecimal("50.00");
 
         Conta conta = criarContaMock(numeroConta, saldoInicial);
 
-        // ALTERNATIVA: Usando Setters em vez de construtor
         DepositoRequest request = new DepositoRequest();
         request.setNumeroConta(numeroConta);
         request.setValor(valorDeposito);
@@ -57,12 +55,10 @@ class TransacaoServiceTest {
         when(contaRepository.findByNumeroConta(numeroConta)).thenReturn(Optional.of(conta));
         when(transacaoRepository.save(any(Transacao.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        // 2. ACT
         TransacaoResponse response = transacaoService.depositar(request);
 
-        // 3. ASSERT
         assertEquals(new BigDecimal("150.00"), conta.getSaldo());
-        // Lembre-se: Como o Response é um Record, o método tem o nome do campo
+     
         assertEquals(TipoDeTransacao.DEPOSITO, response.tipoDeTransacao());
 
         verify(contaRepository).save(conta);
@@ -71,7 +67,7 @@ class TransacaoServiceTest {
     @Test
     @DisplayName("Deve lançar erro ao tentar depositar valor negativo")
     void depositar_ErroValorInvalido() {
-        // Usando Setters
+        
         DepositoRequest request = new DepositoRequest();
         request.setNumeroConta("12345");
         request.setValor(new BigDecimal("-10.00"));
@@ -91,7 +87,6 @@ class TransacaoServiceTest {
         Conta conta = criarContaMock("12345", new BigDecimal("100.00"));
 
         SaqueRequest request = new SaqueRequest();
-        // ❌ LINHA REMOVIDA: request.setNumeroConta("12345");
         request.setValor(new BigDecimal("40.00"));
 
         when(transacaoRepository.save(any(Transacao.class))).thenAnswer(i -> i.getArguments()[0]);
@@ -108,11 +103,8 @@ class TransacaoServiceTest {
         Conta conta = criarContaMock("12345", new BigDecimal("10.00"));
 
         SaqueRequest request = new SaqueRequest();
-        // ❌ LINHA REMOVIDA: request.setNumeroConta("12345");
         request.setValor(new BigDecimal("50.00"));
-
-        // Nota: Se o seu serviço usa 'contaOrigem' direto, talvez nem precise desse mock de repository,
-        // mas mal não faz mantê-lo.
+        
 
         assertThrows(ArgumentoInvalidoException.class, () -> {
             transacaoService.sacar(conta, request);
@@ -132,7 +124,6 @@ class TransacaoServiceTest {
 
         TransferenciaRequest request = new TransferenciaRequest();
 
-        // LINHA REMOVIDA: request.setNumeroContaOrigem("11111");
 
         request.setNumeroContaDestino("22222");
         request.setValor(new BigDecimal("100.00"));

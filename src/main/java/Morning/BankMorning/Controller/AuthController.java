@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/auth") // Mantendo compatibilidade com seus testes
+@RequestMapping("/api/auth")
 public class AuthController {
 
     @Autowired
@@ -34,16 +34,13 @@ public class AuthController {
 
     @PostMapping("/cadastro")
     public ResponseEntity<UsuarioResponse> cadastro(@RequestBody @Valid CadastroRequest cadastroRequest) {
-        // Não precisa de try-catch aqui, o @ExceptionHandler cuida disso
         UsuarioResponse response = usuarioService.cadastrarNovoUsuarioeConta(cadastroRequest);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest body) {
-        // O authenticationManager lança BadCredentialsException se a senha for errada
-        // Essa exceção será capturada pelo @ExceptionHandler(BadCredentialsException.class) lá embaixo
-        var authenticationToken = new UsernamePasswordAuthenticationToken(
+       var authenticationToken = new UsernamePasswordAuthenticationToken(
                 body.login(),
                 body.senha()
         );

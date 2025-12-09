@@ -38,7 +38,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /auth/login - Deve retornar 401 se a senha estiver errada")
     void login_SenhaIncorreta() throws Exception {
-        // 1. Cria e Salva Usuário
+        // Criando a conta
         Usuario usuario = new Usuario();
         usuario.setNome("Hacker Teste");
         usuario.setCpf("111.111.111-11");
@@ -48,7 +48,7 @@ class AuthControllerTest {
 
         usuario = usuarioRepository.save(usuario); // Garante ID gerado
 
-        // 2. Cria e Salva Conta
+        // Criando a conta
         Conta conta = new Conta();
         conta.setSenha(passwordEncoder.encode("senhaCerta123"));
         conta.setUsuario(usuario);
@@ -58,11 +58,10 @@ class AuthControllerTest {
 
         conta = contaRepository.save(conta);
 
-        // 3. ATUALIZAÇÃO CRUCIAL: Vincula a conta de volta no usuário na memória
         usuario.setConta(conta);
-        usuarioRepository.save(usuario); // Atualiza o usuário para ter a conta vinculada
+        usuarioRepository.save(usuario);
 
-        // 4. Teste
+        // Teste
         LoginRequest loginErrado = new LoginRequest("111.111.111-11", "senhaErrada!!!");
 
         mockMvc.perform(post("/api/auth/login")
@@ -90,7 +89,6 @@ class AuthControllerTest {
         conta.setNumeroConta("88888");
         conta = contaRepository.save(conta);
 
-        // Garante que o usuário sabe que tem uma conta
         usuario.setConta(conta);
         usuarioRepository.save(usuario);
 

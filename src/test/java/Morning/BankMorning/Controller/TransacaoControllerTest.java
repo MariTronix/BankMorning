@@ -45,7 +45,7 @@ class TransacaoControllerTest {
 
     @BeforeEach
     void setup() {
-        // PREPARA O CENÁRIO (Cria usuários e contas no banco H2)
+        // Criando a conta no banco H2
         Usuario u1 = criarUsuario("User 1", "111.111.111-11", "u1@test.com");
         contaPrincipal = criarConta(u1, "10001");
 
@@ -57,7 +57,7 @@ class TransacaoControllerTest {
     @DisplayName("POST - Deve depositar com sucesso")
     @WithMockUser(username = "u1@test.com", roles = "USUARIO")
     void depositar_Sucesso() throws Exception {
-        // Usando Setters para criar o objeto
+        // Criando o objeto
         DepositoRequest request = new DepositoRequest();
         request.setNumeroConta(contaPrincipal.getNumeroConta());
         request.setValor(new BigDecimal("500.00"));
@@ -69,7 +69,7 @@ class TransacaoControllerTest {
                 .andExpect(jsonPath("$.tipoDeTransacao").value("DEPOSITO")) // Verifica o JSON de resposta
                 .andExpect(jsonPath("$.valor").value(500.00));
 
-        // Validação Extra: Verifica se o saldo mudou no banco
+        // Verificando se o saldo mudou no banco
         Conta contaAtualizada = contaRepository.findById(contaPrincipal.getIdConta()).get();
         assertEquals(0, new BigDecimal("500.00").compareTo(contaAtualizada.getSaldo()));
     }
@@ -78,23 +78,22 @@ class TransacaoControllerTest {
     @DisplayName("POST - Deve sacar com sucesso")
     @WithMockUser(username = "u1@test.com", roles = "USUARIO")
     void sacar_Sucesso() throws Exception {
-        // 1. Injeta saldo primeiro (simulação direta no banco)
+        // Injetando saldo primeiro (simulação direta no banco)
         contaPrincipal.setSaldo(new BigDecimal("1000.00"));
         contaRepository.save(contaPrincipal);
 
-        // 2. Prepara o Request de Saque
+        // Preparando o Request de Saque
         SaqueRequest request = new SaqueRequest();
-        // ❌ REMOVIDO: request.setNumeroConta(contaPrincipal.getNumeroConta()); // O Controller obtém a origem do JWT
         request.setValor(new BigDecimal("200.00"));
 
-        // 3. Executa
+        // Executando o teste
         mockMvc.perform(post("/api/transacoes/sacar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tipoDeTransacao").value("SAQUE"));
 
-        // 4. Verifica Saldo Final (1000 - 200 = 800)
+        // Verifica Saldo Final (1000 - 200 = 800)
         Conta contaAtualizada = contaRepository.findById(contaPrincipal.getIdConta()).get();
         assertEquals(0, new BigDecimal("800.00").compareTo(contaAtualizada.getSaldo()));
     }
@@ -103,15 +102,13 @@ class TransacaoControllerTest {
     @DisplayName("POST - Deve retornar ERRO se saldo for insuficiente")
     @WithMockUser(username = "u1@test.com", roles = "USUARIO")
     void sacar_SemSaldo() throws Exception {
-        // Conta começa com ZERO
+        // Conta começa com zero
         SaqueRequest request = new SaqueRequest();
-        // ❌ REMOVIDO: request.setNumeroConta(contaPrincipal.getNumeroConta()); // O Controller obtém a origem do JWT
         request.setValor(new BigDecimal("50.00"));
 
         mockMvc.perform(post("/api/transacoes/sacar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                // Esperamos um erro 400 (Bad Request) ou 500 dependendo de como sua ExceptionHandler trata
                 .andExpect(status().isBadRequest());
     }
 
@@ -119,24 +116,22 @@ class TransacaoControllerTest {
     @DisplayName("POST - Deve transferir entre contas")
     @WithMockUser(username = "u1@test.com", roles = "USUARIO")
     void transferir_Sucesso() throws Exception {
-        // 1. Origem rica
         contaPrincipal.setSaldo(new BigDecimal("1000.00"));
         contaRepository.save(contaPrincipal);
 
-        // 2. Prepara Transferência
+        // Preparando a Transferência
         TransferenciaRequest request = new TransferenciaRequest();
-        // REMOVIDO: request.setNumeroContaOrigem(contaPrincipal.getNumeroConta());
         request.setNumeroContaDestino(contaSecundaria.getNumeroConta());
         request.setValor(new BigDecimal("300.00"));
 
-        // 3. Executa
+        // Executando o teste
         mockMvc.perform(post("/api/transacoes/transferir")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tipoDeTransacao").value("TRANSFERENCIA"));
 
-        // 4. Verifica Saldos
+        // Verifica Saldos
         Conta origem = contaRepository.findById(contaPrincipal.getIdConta()).get();
         Conta destino = contaRepository.findById(contaSecundaria.getIdConta()).get();
 
@@ -144,7 +139,7 @@ class TransacaoControllerTest {
         assertEquals(0, new BigDecimal("300.00").compareTo(destino.getSaldo()));
     }
 
-    // --- Métodos Auxiliares para popular o banco antes do teste ---
+    // Populando o banco antes do teste
     private Usuario criarUsuario(String nome, String cpf, String email) {
         Usuario u = new Usuario();
         u.setNome(nome);
@@ -162,7 +157,6 @@ class TransacaoControllerTest {
         c.setSenha(passwordEncoder.encode("123"));
         c.setNumeroConta(numeroConta);
         c.setAgencia("777");
-        // Importante: Vínculo Bidirecional (para evitar problemas de mapeamento)
         usuario.setConta(c);
         return contaRepository.save(c);
     }

@@ -45,24 +45,20 @@ class ContaServiceTest {
     @Test
     @DisplayName("Deve criar conta com sucesso: Senha criptografada, Saldo 0, Agência 777")
     void criarConta_Sucesso() {
-        // 1. CENÁRIO
+        // Criando o usuário
         Usuario usuario = new Usuario();
         usuario.setCpf("123.456.789-00");
         usuario.setNome("Teste");
 
         ContaRequest request = new ContaRequest("senha123", usuario);
 
-        // Mocks
-        // Garante que o usuário ainda NÃO tem conta
         when(contaRepository.findByUsuario_Cpf(usuario.getCpf())).thenReturn(Optional.empty());
 
-        // Simula a criptografia
         when(passwordEncoder.encode("senha123")).thenReturn("HASH_SENHA_FORTE");
 
-        // Simula o salvamento (retorna a conta com ID preenchido)
         when(contaRepository.save(any(Conta.class))).thenAnswer(invocation -> {
             Conta c = invocation.getArgument(0);
-            c.setIdConta(1); // Simula banco gerando ID
+            c.setIdConta(1);
             return c;
         });
 
@@ -70,21 +66,18 @@ class ContaServiceTest {
         when(usuarioService.converterParaResponse(any(Usuario.class)))
                 .thenReturn(new UsuarioResponse("Teste", "123.456.789-00", "email@teste.com"));
 
-        // 2. AÇÃO
         ContaResponse response = contaService.criarConta(usuario, request);
 
-        // 3. VERIFICAÇÃO
         assertNotNull(response);
-        assertEquals(BigDecimal.ZERO, response.saldo()); // Saldo deve ser 0
-        assertEquals("777", response.agencia());         // Agência deve ser 777
+        assertEquals(BigDecimal.ZERO, response.saldo());
+        assertEquals("777", response.agencia());
 
-        // Verifica o que foi passado para o save
         ArgumentCaptor<Conta> contaCaptor = ArgumentCaptor.forClass(Conta.class);
         verify(contaRepository).save(contaCaptor.capture());
 
         Conta contaSalva = contaCaptor.getValue();
-        assertEquals("HASH_SENHA_FORTE", contaSalva.getSenha()); // Senha foi criptografada?
-        assertNotNull(contaSalva.getNumeroConta());              // Gerou número da conta?
+        assertEquals("HASH_SENHA_FORTE", contaSalva.getSenha());
+        assertNotNull(contaSalva.getNumeroConta());
     }
 
     @Test
@@ -97,12 +90,11 @@ class ContaServiceTest {
         // Mock: Já existe uma conta retornada para esse CPF
         when(contaRepository.findByUsuario_Cpf(usuario.getCpf())).thenReturn(Optional.of(new Conta()));
 
-        // Ação & Verificação
         assertThrows(ArgumentoInvalidoException.class, () -> {
             contaService.criarConta(usuario, request);
         });
 
-        verify(contaRepository, never()).save(any()); // Não deve salvar nada
+        verify(contaRepository, never()).save(any());
     }
 
     // --- TESTES DE BUSCA ---
@@ -119,7 +111,7 @@ class ContaServiceTest {
         ContaResponse response = contaService.buscarContaPorId(id);
 
         assertNotNull(response);
-        assertEquals(id, response.idConta()); // Assumindo que o ID é mapeado ou o numero
+        assertEquals(id, response.idConta());
     }
 
     @Test
